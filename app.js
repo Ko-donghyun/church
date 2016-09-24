@@ -5,9 +5,15 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var configure = require('./config/env/configure.js');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var verse = require('./routes/verse');
+var winston = require('./config/env/winston.js');
+
+var User = require('./model/user');
+var Verse = require('./model/verse');
+var Like = require('./model/like');
 
 var app = express();
 
@@ -40,6 +46,17 @@ app.use(function(req, res, next) {
 // will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
+    if (err.statusCode === 200) {
+      winston.error('에러 발생 : %s', err.message);
+
+      return res.json({
+        success: 0,
+        message: err.message
+      })
+    }
+
+    winston.error('에러 발생 : %s', err.stack);
+
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -51,6 +68,17 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+  if (err.statusCode === 200) {
+    winston.error('에러 발생 : %s', err.message);
+
+    return res.json({
+      success: 0,
+      message: err.message
+    })
+  }
+
+  winston.error('에러 발생 : %s', err.stack);
+
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,
