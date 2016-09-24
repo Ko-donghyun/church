@@ -13,6 +13,9 @@ var Verse = sequelize.define('verse', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  backgroundImageUrl: {
+    type: Sequelize.STRING
+  },
   userId: {
     type: Sequelize.INTEGER,
     allowNull: false
