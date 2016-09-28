@@ -7,13 +7,13 @@ var helper = require('./../helper/helper.js');
  * 유저 정보 저장할 때 필요한 유효성 체크 메서드
  *
  * @param uuid
- * @param age
+ * @param birthYear
  * @param gender
  * @param churchName
  */
-exports.userInfoValidation = function(uuid, age, gender, churchName) {
+exports.userInfoValidation = function(uuid, birthYear, gender, churchName) {
   return new Promise(function(resolve, reject) {
-    if (uuid === undefined || age === undefined || gender === undefined || churchName === undefined) {
+    if (uuid === undefined || birthYear === undefined || gender === undefined || churchName === undefined) {
       return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 

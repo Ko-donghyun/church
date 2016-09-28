@@ -14,7 +14,7 @@ var User = sequelize.define('user', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  age: {
+  birthYear: {
     type: Sequelize.INTEGER,
     allowNull: false
   },
