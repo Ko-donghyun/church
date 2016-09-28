@@ -14,18 +14,18 @@ router.get('/', function(req, res, next) {
 
 router.post('/register', function(req, res, next) {
   var userUuid = req.body.uuid;
-  var userAge = req.body.age;
+  var userBirthYear = req.body.birthYear;
   var userGender = req.body.gender;
   var userChurchName = req.body.churchName;
 
   winston.debug('유저의 validation 체크 시작');
-  validation.userInfoValidation(userUuid, userAge, userGender, userChurchName).then(function() {
+  validation.userInfoValidation(userUuid, userBirthYear, userGender, userChurchName).then(function() {
     winston.debug('유저의 validation 체크 완료');
     winston.debug('유저의 정보 저장 시작');
 
     return User.create({
       uuid: userUuid,
-      age: userAge,
+      age: userBirthYear,
       gender: userGender,
       churchName: userChurchName
     });
