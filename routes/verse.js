@@ -88,15 +88,8 @@ router.get('/randomList', function(req, res, next) {
   winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
 
   var limit = 20;
-  var today = new Date().getTime();
-  var yesterday = new Date(today - 86400000);
-
+  
   Verse.findAll({
-    where: {
-      createdAt: {
-        gt: yesterday
-      }
-    },
     order: [
       Sequelize.fn( 'RAND' )
     ],
