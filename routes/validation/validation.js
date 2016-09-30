@@ -41,3 +41,21 @@ exports.getBibleVerseValidation = function(version, name, startChapter, endChapt
     resolve();
   });
 };
+
+/**
+ * 성경 구절 저장하기 유효성 체크 메서드
+ *
+ * @param content
+ * @param comment
+ * @param backgroundImageName
+ * @param userId
+ */
+exports.saveVerseValidation = function(content, comment, backgroundImageName, userId) {
+  return new Promise(function(resolve, reject) {
+    if (content === undefined || comment === undefined || backgroundImageName === undefined || userId === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
