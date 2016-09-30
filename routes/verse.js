@@ -1,4 +1,5 @@
 var express = require('express');
+var Sequelize = require('sequelize');
 
 var helper = require('./helper/helper.js');
 var validation = require('./validation/validation.js');
@@ -73,7 +74,40 @@ router.post('/bible', function(req, res, next) {
       result: '저장하기 완료 했습니다.'
     })
   }).catch(function(err) {
-    winston.debug('유저 정보 저장 실패');
+    winston.debug('성경 구절 저장하기 실패');
+
+    next(err);
+  });
+});
+
+
+/**
+ * 랜덤으로 성경 리스트 불러오기 컨트롤러
+ */
+router.get('/randomList', function(req, res, next) {
+  winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
+
+  var limit = 20;
+  var today = new Date().getTime();
+  var yesterday = new Date(today - 86400000);
+
+  Verse.findAll({
+    where: {
+      createdAt: {
+        gt: yesterday
+      }
+    },
+    order: [
+      Sequelize.fn( 'RAND' )
+    ],
+    limit: limit
+  }).then(function(result) {
+    res.json({
+      success: 1,
+      result: result
+    })
+  }).catch(function(err) {
+    winston.debug('랜덤으로 성경 리스트 불러오기 실패');
 
     next(err);
   });
