@@ -12,7 +12,12 @@ router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
+/**
+ * 유저 정보 저장하기 컨트롤러
+ */
 router.post('/register', function(req, res, next) {
+  winston.debug('유저 정보 저장하기 컨트롤러 시작');
+
   var userUuid = req.body.uuid;
   var userBirthYear = req.body.birthYear;
   var userGender = req.body.gender;
