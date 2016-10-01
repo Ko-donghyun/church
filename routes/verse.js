@@ -5,6 +5,7 @@ var helper = require('./helper/helper.js');
 var validation = require('./validation/validation.js');
 var Verse = require('./../model/verse');
 var winston = require('./../config/env/winston.js');
+var credentials = require('./../credentials.js');
 
 var router = express.Router();
 
@@ -48,7 +49,7 @@ router.get('/bible', function(req, res, next) {
 router.post('/bible', function(req, res, next) {
   winston.debug('성경 구절 저장하기 컨트롤러 시작');
 
-  var imageUrl = '';
+  var imageUrl = credentials.s3EndPoint;
 
   var content = req.body.content;
   var comment = req.body.comment;
