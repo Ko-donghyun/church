@@ -7,9 +7,9 @@ var credentials = require('./../../credentials.js');
  */
 
 var sequelize = new Sequelize(credentials.mysqlDateBaseName, credentials.mysqlUserName, credentials.mysqlPassword, {
-  host: 'church.c2kvxt2glrlu.ap-northeast-2.rds.amazonaws.com',
-  port: 3306,
-  dialect: 'mysql',
+  host: credentials.host,
+  port: credentials.port,
+  dialect: credentials.dialect,
   pool: {
     max: 5,
     min: 0,
