@@ -88,13 +88,15 @@ router.get('/randomList', function(req, res, next) {
   winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
 
   var limit = 20;
-  
+
   Verse.findAll({
     order: [
       Sequelize.fn( 'RAND' )
     ],
     limit: limit
   }).then(function(result) {
+    winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+    
     res.json({
       success: 1,
       result: result
