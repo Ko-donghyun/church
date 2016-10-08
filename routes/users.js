@@ -30,7 +30,7 @@ router.post('/register', function(req, res, next) {
 
     return User.create({
       uuid: userUuid,
-      age: userBirthYear,
+      birthYear: userBirthYear,
       gender: userGender,
       churchName: userChurchName
     });
