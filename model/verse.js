@@ -5,6 +5,26 @@ var Sequelize = require('sequelize');
 var sequelize = require('./../config/env/sequelize.js');
 
 var Verse = sequelize.define('verse', {
+  bibleName: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  startChapter: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  endChapter: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  startVerse: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  endVerse: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
   content: {
     type: Sequelize.STRING,
     allowNull: false
@@ -13,8 +33,20 @@ var Verse = sequelize.define('verse', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  backgroundImageUrl: {
+  backgroundImageName: {
     type: Sequelize.STRING
+  },
+  likeCount: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
+  },
+  commentCount: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
+  },
+  reportCount: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   },
   userId: {
     type: Sequelize.INTEGER,
