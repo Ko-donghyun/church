@@ -16,18 +16,18 @@ router.get('/bible', function(req, res, next) {
   winston.debug('성경 구절 가져오기 컨트롤러 시작');
 
   var version = req.query.version;
-  var name = req.query.name;
+  var bibleName = req.query.bibleName;
   var startChapter = req.query.startChapter;
   var endChapter = req.query.endChapter;
-  var startParagraph = req.query.startParagraph;
-  var endParagraph = req.query.endParagraph;
+  var startVerse = req.query.startVerse;
+  var endVerse = req.query.endVerse;
 
   winston.debug('유효성 검사 시작');
-  validation.getBibleVerseValidation(version, name, startChapter, endChapter, startParagraph, endParagraph).then(function() {
+  validation.getBibleVerseValidation(version, bibleName, startChapter, endChapter, startVerse, endVerse).then(function() {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 가져오기 시작');
 
-    helper.getBibleVerse(version, name, startChapter, endChapter, startParagraph, endParagraph).then(function(bibleText) {
+    helper.getBibleVerse(version, bibleName, startChapter, endChapter, startVerse, endVerse).then(function(bibleText) {
       winston.debug('성경 구절 가져오기 완료');
 
       if (bibleText === '\nBible verse not found.\n') {
@@ -51,20 +51,30 @@ router.post('/bible', function(req, res, next) {
 
   var imageUrl = credentials.s3EndPoint;
 
+  var bibleName = req.body.bibleName;
+  var startChapter = req.body.startChapter;
+  var endChapter = req.body.endChapter;
+  var startVerse = req.body.startVerse;
+  var endVerse = req.body.endVerse;
   var content = req.body.content;
   var comment = req.body.comment;
   var backgroundImageName = req.body.backgroundImageName;
   var userId = req.body.userId;
 
   winston.debug('유효성 검사 시작');
-  validation.saveVerseValidation(content, comment, backgroundImageName, userId).then(function() {
+  validation.saveVerseValidation(bibleName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, userId).then(function() {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 저장하기 시작');
 
     return Verse.create({
+      bibleName: bibleName,
+      startChapter: startChapter,
+      endChapter: endChapter,
+      startVerse: startVerse,
+      endVerse: endVerse,
       content: content,
       comment: comment,
-      backgroundImageUrl: imageUrl + backgroundImageName,
+      backgroundImageName: backgroundImageName,
       userId: userId
     });
   }).then(function(verse) {
