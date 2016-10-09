@@ -15,9 +15,16 @@ if (process.env.NODE_ENV === 'development') {
   logger = new (winston.Logger)({
     transports: [
       new (winston.transports.Console)({
-        level: 'info',
+        level: 'warn',
         colorize: true,
         prettyPrint: true
+      }),
+
+      // 하루 단위로 파일로 저장
+      new (require('winston-daily-rotate-file'))({
+        level: 'warn',
+        filename: './logs/daily.log',
+        datePattern: '.yyyy-MM-dd'
       })
     ]
   });
