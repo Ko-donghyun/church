@@ -21,6 +21,10 @@ var User = sequelize.define('user', {
   churchName:  {
     type: Sequelize.STRING,
     allowNull: false
+  },
+  isExpel:  {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,
