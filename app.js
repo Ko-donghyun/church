@@ -10,6 +10,7 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var verse = require('./routes/verse');
 var winston = require('./config/env/winston.js');
+var helper = require('./routes/helper/helper.js');
 
 var User = require('./model/user');
 var Verse = require('./model/verse');
@@ -35,8 +36,7 @@ app.use('/verse', verse);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
+  var err = new helper.makePredictableError(404, 'Not Found');
   next(err);
 });
 
@@ -47,6 +47,15 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     if (err.statusCode === 200) {
+      winston.error('에러 발생 : %s', err.message);
+
+      return res.json({
+        success: 0,
+        message: err.message
+      })
+    }
+
+    if (err.statusCode === 404) {
       winston.error('에러 발생 : %s', err.message);
 
       return res.json({
@@ -69,6 +78,15 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   if (err.statusCode === 200) {
+    winston.error('에러 발생 : %s', err.message);
+
+    return res.json({
+      success: 0,
+      message: err.message
+    })
+  }
+
+  if (err.statusCode === 404) {
     winston.error('에러 발생 : %s', err.message);
 
     return res.json({
