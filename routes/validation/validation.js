@@ -21,6 +21,22 @@ exports.userInfoValidation = function(uuid, birthYear, gender, churchName) {
   });
 };
 
+
+/**
+ * 유저 확인하기 유효성 체크 메서드
+ *
+ * @param uuid
+ */
+exports.userCheckValidation = function(uuid) {
+  return new Promise(function(resolve, reject) {
+    if (uuid === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+
 /**
  * 성경 구절 가져오기 유효성 체크 메서드
  *
