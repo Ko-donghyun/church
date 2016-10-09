@@ -66,3 +66,19 @@ exports.saveVerseValidation = function(bibleName, startChapter, endChapter, star
     resolve();
   });
 };
+
+/**
+ * 내 성경 구절 리스트 가져오기 유효성 체크 메서드
+ *
+ * @param userId
+ */
+exports.getMyListValidation = function(userId) {
+  return new Promise(function(resolve, reject) {
+    if (userId === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+

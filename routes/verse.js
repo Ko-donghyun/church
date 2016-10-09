@@ -119,4 +119,38 @@ router.get('/randomList', function(req, res, next) {
   });
 });
 
+
+/**
+ * 내 성경 구절 리스트 가져오기 컨트롤러
+ */
+router.get('/myList', function(req, res, next) {
+  winston.debug('내 성경 구절 리스트 가져오기 컨트롤러 시작');
+
+  var userId = req.query.userId;
+  var limit = 20;
+
+  winston.debug('유효성 검사 시작');
+  validation.getMyListValidation(userId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('내 성경 구절 리스트 가져오기 시작');
+
+    Verse.findAll({
+      where: {
+        userId: userId
+      },
+      limit: limit
+    });
+  }).then(function(result) {
+    res.json({
+      success: 1,
+      result: result
+    });
+  }).catch(function(err) {
+    winston.debug('내 성경 리스트 불러오기 실패');
+
+    next(err);
+  });
+});
+
+
 module.exports = router;
