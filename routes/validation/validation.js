@@ -25,16 +25,16 @@ exports.userInfoValidation = function(uuid, birthYear, gender, churchName) {
  * 성경 구절 가져오기 유효성 체크 메서드
  *
  * @param version
- * @param name
+ * @param bibleName
  * @param startChapter
  * @param endChapter
- * @param startParagraph
- * @param endParagraph
+ * @param startVerse
+ * @param endVerse
  */
-exports.getBibleVerseValidation = function(version, name, startChapter, endChapter, startParagraph, endParagraph) {
+exports.getBibleVerseValidation = function(version, bibleName, startChapter, endChapter, startVerse, endVerse) {
   return new Promise(function(resolve, reject) {
-    if (version === undefined || name === undefined || startChapter === undefined || endChapter === undefined ||
-      startParagraph === undefined || endParagraph === undefined) {
+    if (version === undefined || bibleName === undefined || startChapter === undefined || endChapter === undefined ||
+      startVerse === undefined || endVerse === undefined) {
       return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
@@ -45,14 +45,21 @@ exports.getBibleVerseValidation = function(version, name, startChapter, endChapt
 /**
  * 성경 구절 저장하기 유효성 체크 메서드
  *
+ * @param bibleName
+ * @param startChapter
+ * @param endChapter
+ * @param startVerse
+ * @param endVerse
  * @param content
  * @param comment
  * @param backgroundImageName
  * @param userId
  */
-exports.saveVerseValidation = function(content, comment, backgroundImageName, userId) {
+exports.saveVerseValidation = function(bibleName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, userId) {
   return new Promise(function(resolve, reject) {
-    if (content === undefined || comment === undefined || backgroundImageName === undefined || userId === undefined) {
+    if (bibleName === undefined || startChapter === undefined || endChapter === undefined ||
+      startVerse === undefined || endVerse === undefined || content === undefined || comment === undefined ||
+      backgroundImageName === undefined || userId === undefined) {
       return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
