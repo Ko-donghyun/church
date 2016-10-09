@@ -134,7 +134,7 @@ router.get('/myList', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
-    Verse.findAll({
+    return Verse.findAll({
       where: {
         userId: userId
       },
