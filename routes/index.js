@@ -1,6 +1,7 @@
 var express = require('express');
 
-var currentAppVersion = 1.0;
+var helper = require('./helper/helper.js');
+var winston = require('./../config/env/winston.js');
 
 var router = express.Router();
 
@@ -9,19 +10,24 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+/**
+ * 어플리 케이션 버전 체크 컨트롤러
+ */
 router.get('/application/check', function(req, res, next) {
   var appVersion = req.query.appVersion || 0;
 
-  if (appVersion < currentAppVersion) {
-    return res.json({
-      success: 0,
-      message: '버전이 낮습니다.'
-    });
-  }
+  winston.debug('어플리 케이션 버전 체크 시작');
+  helper.appVersionCheck(appVersion).then(function(message) {
+    winston.debug('어플리 케이션 최신 버전 확인');
 
-  res.json({
-    success: 1,
-    message: '최신 버전 입니다.'
+    res.json({
+      success: 1,
+      message: message
+    });
+  }).catch(function(err) {
+    winston.debug('어플리 케이션 버전 업 필요');
+
+    next(err);
   });
 });
 
