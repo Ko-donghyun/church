@@ -58,7 +58,7 @@ exports.appVersionCheck = function(appVersion) {
     var currentAppVersion = global.currentAppVersion;
 
     if (appVersion < currentAppVersion) {
-      return reject(new this.makePredictableError(200, '버전이 낮습니다.'));
+      return resolve('버전이 낮습니다.');
     }
 
     resolve('최신 버전 입니다');

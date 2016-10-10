@@ -18,14 +18,14 @@ router.get('/application/check', function(req, res, next) {
 
   winston.debug('어플리 케이션 버전 체크 시작');
   helper.appVersionCheck(appVersion).then(function(message) {
-    winston.debug('어플리 케이션 최신 버전 확인');
+    winston.debug('어플리 케이션 버전 체크 완료');
 
     res.json({
       success: 1,
       message: message
     });
   }).catch(function(err) {
-    winston.debug('어플리 케이션 버전 업 필요');
+    winston.debug('어플리 케이션 버전 체크 실패');
 
     next(err);
   });
