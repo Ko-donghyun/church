@@ -2,6 +2,7 @@
 var request = require('request');
 var cheerio = require('cheerio');
 
+var global = require('./../../config/env/global.js');
 var winston = require('./../../config/env/winston.js');
 
 /**
@@ -43,5 +44,23 @@ exports.getBibleVerse = function(version, name, startChapter, endChapter, startP
 
       reject(error);
     })
+  });
+};
+
+
+/**
+ * 어플리케이션 버전 체크 헬퍼 메서드
+ *
+ * @param appVersion
+ */
+exports.appVersionCheck = function(appVersion) {
+  return new Promise(function(resolve, reject) {
+    var currentAppVersion = global.currentAppVersion;
+
+    if (appVersion < currentAppVersion) {
+      return resolve('버전이 낮습니다.');
+    }
+
+    resolve('최신 버전 입니다');
   });
 };

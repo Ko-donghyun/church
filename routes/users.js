@@ -51,29 +51,40 @@ router.post('/register', function(req, res, next) {
 
 
 /**
- * 유저 확인하기 컨트롤러
+ * 기존 유저 확인하기 컨트롤러
  */
 router.post('/check', function(req, res, next) {
-  winston.debug('유저 확인하기 컨트롤러 시작');
+  winston.debug('기존 유저 확인하기 컨트롤러 시작');
+
+  // 1. 신규 유저
+  // 2. 정상적인 기존 유저
+  // 3. 제제당한 기존 유저
 
   var userUuid = req.body.uuid;
+  var appVersion = req.body.appVersion || 0;
 
-  winston.debug('유저의 validation 체크 시작');
-  validation.userCheckValidation(userUuid).then(function() {
-    winston.debug('유저의 validation 체크 완료');
-    winston.debug('유저 확인 시작');
+  // 항상 앱 실행시 처음 요청하는 부분이므로 버전 체크와 동시에 실행함.
+  winston.debug('app Version 체크 시작');
+  helper.appVersionCheck(appVersion).then(function(message) {
+    if (message === '버전이 낮습니다.') {
+      winston.debug('app Version 낮음');
+      return Promise.reject(new helper.makePredictableError(200, message));
+    }
 
-    // 1. 신규 유저
-    // 2. 정상적인 기존 유저
-    // 3. 제제당한 기존 유저
+    winston.debug('app Version 체크 완료');
+    winston.debug('validation 체크 시작');
+    return validation.userCheckValidation(userUuid).then(function() {
+      winston.debug('validation 체크 완료');
+      winston.debug('유저 확인 시작');
 
-    return User.findOne({
-      where: {
-        uuid: userUuid
-      }
-    });
+      return User.findOne({
+        where: {
+          uuid: userUuid
+        }
+      });
+    })
   }).then(function(user) {
-    winston.debug('유저 확인 저장 완료');
+    winston.debug('유저 확인 완료');
     winston.debug('리스폰 보내기');
     if (user === null) {
       return Promise.reject(new helper.makePredictableError(200, '신규 유저입니다.'));
@@ -88,7 +99,7 @@ router.post('/check', function(req, res, next) {
       result: user.id
     });
   }).catch(function(err) {
-    winston.debug('유저 정보 저장 실패');
+    winston.debug('유저 확인 실패');
 
     next(err);
   });
