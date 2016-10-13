@@ -1,5 +1,4 @@
 
-var winston = require('winston');
 var Sequelize = require('sequelize');
 
 var sequelize = require('./../config/env/sequelize.js');
@@ -60,8 +59,5 @@ var Verse = sequelize.define('verse', {
   engine: 'InnoDB'
 });
 
-Verse.sync().then(function () {
-  winston.debug('Verse 디비 생성 완료');
-});
 
 module.exports = Verse;
