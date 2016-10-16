@@ -117,3 +117,20 @@ exports.likeValidation = function(userId, verseId) {
 };
 
 
+/**
+ * 좋아요 취소하기 유효성 체크 메서드
+ *
+ * @param userId
+ * @param likeId
+ */
+exports.dislikeValidation = function(userId, likeId) {
+  return new Promise(function(resolve, reject) {
+    if (userId === undefined || likeId === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+
+

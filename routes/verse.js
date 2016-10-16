@@ -125,6 +125,7 @@ router.post('/like/:verseId', function(req, res, next) {
 
   var userId = req.body.userId;
   var verseId = req.params.verseId;
+  var LikeId;
 
   winston.debug('유효성 검사 시작');
   validation.likeValidation(userId, verseId).then(function() {
@@ -139,16 +140,24 @@ router.post('/like/:verseId', function(req, res, next) {
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
         winston.debug('좋아요 디비에 추가');
-        winston.debug(verse.id);
 
-        return Like.create({
-          userId: userId,
-          verseId: verseId
-        }, {transaction: t}).then(function (like) {
-          return verse.increment('likeCount', {transaction: t});
-        }).then(function (verse) {
+        return Like.findOrCreate({
+          where: {
+            verseId: verseId,
+            userId: userId
+          },
+          transaction: t
+        }).spread(function(like, created) {
+          LikeId = like.id;
+
+          winston.debug(created);
+          if (created) {
+            return verse.increment('likeCount', {transaction: t});
+          }
+        }).then(function () {
           t.commit();
         }).catch(function (err) {
+
           t.rollback();
         })
       });
@@ -158,7 +167,7 @@ router.post('/like/:verseId', function(req, res, next) {
 
     res.json({
       success: 1,
-      message: '좋아요 처리 완료.'
+      result: LikeId
     })
   }).catch(function(err) {
     winston.debug('좋아요 실패');
@@ -166,33 +175,51 @@ router.post('/like/:verseId', function(req, res, next) {
     next(err);
   });
 });
-    }
 
-    winston.debug('versId를 이용하여 verse 조회 완료');
-    winston.debug('좋아요 디비에 추가');
-    winston.debug(verse.id);
+
+/**
+ * 종아요 취소 컨트롤러
+ */
+router.post('/dislike/:likeId', function(req, res, next) {
+  winston.debug('좋아요 취소 컨트롤러 시작');
+
+  var userId = req.body.userId;
+  var likeId = req.params.likeId;
+
+  winston.debug('유효성 검사 시작');
+  validation.dislikeValidation(userId, likeId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('likeId를 이용하여 like 조회 시작');
 
     return sequelize.transaction().then(function (t) {
-      return Like.create({
-        userId: userId,
-        verseId: verseId
-      }, { transaction: t }).then(function (like) {
-        return verse.increment('likeCount', {transaction: t});
-      }).then(function(verse) {
-        t.commit();
-      }).catch(function(err) {
-        t.rollback();
-      })
+      return Like.findById(likeId, {transaction: t}).then(function (like) {
+        if (like === null) {
+          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 likeId 입니다'));
+        }
+
+        winston.debug('likeId를 이용하여 like 조회 완료');
+        winston.debug('좋아요 완전히 삭제');
+
+        return like.destroy({force: true}, {transaction: t}).then(function () {
+          return Verse.findById(like.verseId, {transaction: t}).then(function (verse) {
+            return verse.decrement('likeCount', {transaction: t});
+          });
+        }).then(function () {
+          t.commit();
+        }).catch(function (err) {
+          t.rollback();
+        })
+      });
     });
   }).then(function() {
-    winston.debug('좋아요 완료');
+    winston.debug('좋아요 삭제 완료');
 
     res.json({
       success: 1,
-      message: '좋아요 처리 완료.'
+      message: '좋아요 삭제 완료.'
     })
   }).catch(function(err) {
-    winston.debug('좋아요 실패');
+    winston.debug('좋아요 삭제 실패');
 
     next(err);
   });
