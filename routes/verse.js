@@ -133,6 +133,10 @@ router.post('/like/:verseId', function(req, res, next) {
 
     return Verse.findById(verseId);
   }).then(function(verse) {
+    if (verse === null) {
+      return Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+    }
+
     winston.debug('versId를 이용하여 verse 조회 완료');
     winston.debug('좋아요 디비에 추가');
     winston.debug(verse.id);
