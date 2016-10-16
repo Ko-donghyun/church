@@ -312,4 +312,52 @@ router.get('/myList', function(req, res, next) {
 });
 
 
+/**
+ * 내 성경 구절 지우기 컨트롤러
+ */
+router.post('/myList/delete', function(req, res, next) {
+  winston.debug('내 성경 구절 지우기 컨트롤러 시작');
+
+  var userId = req.body.userId;
+  var verseId = req.body.verseId;
+
+  winston.debug('유효성 검사 시작');
+  validation.deleteMyVerseValidation(userId, verseId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('verseId를 이용하여 verse 조회 시작');
+
+    return sequelize.transaction().then(function (t) {
+      return Verse.findOne({
+        where: {
+          id: verseId,
+          userId: userId
+        }
+      }, {transaction: t}).then(function (verse) {
+        if (verse === null) {
+          return Promise.reject(helper.makePredictableError(200, '유효한 성경 구절이 없습니다'));
+        }
+
+        winston.debug('verseId를 이용하여 verse 조회 완료');
+        winston.debug('내 성경 구절 지우기 시작');
+
+        return verse.destroy({transaction: t});
+      }).then(function () {
+        t.commit();
+      }).catch(function (err) {
+        t.rollback();
+        return Promise.reject(err);
+      });
+    });
+  }).then(function() {
+    res.json({
+      success: 1,
+      result: '지우기 완료'
+    });
+  }).catch(function(err) {
+    winston.debug('내 성경 구절 지우기 실패');
+
+    next(err);
+  });
+});
+
 module.exports = router;
