@@ -3,8 +3,10 @@ var Sequelize = require('sequelize');
 
 var helper = require('./helper/helper.js');
 var validation = require('./validation/validation.js');
-var Verse = require('./../model/verse');
 var winston = require('./../config/env/winston.js');
+var sequelize = require('./../config/env/sequelize.js');
+var Verse = require('./../model/verse');
+var Like = require('./../model/like');
 var credentials = require('./../credentials.js');
 
 var router = express.Router();
@@ -119,6 +121,49 @@ router.get('/randomList', function(req, res, next) {
   });
 });
 
+
+router.post('/like/:verseId', function(req, res, next) {
+  winston.debug('좋아요 컨트롤러 시작');
+
+  var userId = req.body.userId;
+  var verseId = req.params.verseId;
+
+  winston.debug('유효성 검사 시작');
+  validation.likeValidation(userId, verseId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('versId를 이용하여 verse 조회 시작');
+
+    return Verse.findById(verseId);
+  }).then(function(verse) {
+    winston.debug('versId를 이용하여 verse 조회 완료');
+    winston.debug('좋아요 디비에 추가');
+    winston.debug(verse.id);
+
+    return sequelize.transaction().then(function (t) {
+      return Like.create({
+        userId: userId,
+        verseId: verseId
+      }, { transaction: t }).then(function (like) {
+        return verse.increment('likeCount', {transaction: t});
+      }).then(function(verse) {
+        t.commit();
+      }).catch(function(err) {
+        t.rollback();
+      })
+    });
+  }).then(function() {
+    winston.debug('좋아요 완료');
+
+    res.json({
+      success: 1,
+      message: '좋아요 처리 완료.'
+    })
+  }).catch(function(err) {
+    winston.debug('좋아요 실패');
+
+    next(err);
+  });
+});
 
 /**
  * 내 성경 구절 리스트 가져오기 컨트롤러
