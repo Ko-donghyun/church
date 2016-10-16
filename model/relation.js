@@ -2,6 +2,7 @@
 var User = require('./user');
 var Verse = require('./verse');
 var Like = require('./like');
+var Report = require('./report');
 
 User.hasMany(Like, {
   foreignKey: {
@@ -19,5 +20,7 @@ Verse.hasMany(Like, {
 User.sync().then(function () {});
 
 Like.sync().then(function () {});
+
+Report.sync().then(function () {});
 
 Verse.sync().then(function () {});
