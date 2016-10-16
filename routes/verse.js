@@ -251,16 +251,25 @@ router.post('/report/:verseId', function(req, res, next) {
         winston.debug('verseId를 이용하여 verse 조회 완료');
         winston.debug('신고하기 디비에 추가');
 
-        return Report.create({
-          reason: reportReason,
-          verseId: verseId,
-          userId: userId
-        }, {transaction: t}).then(function(report) {
-          return verse.increment('reportCount', {transaction: t});
+        return Report.findOrCreate({
+          where: {
+            verseId: verseId,
+            userId: userId
+          },
+          defaults: { reason: reportReason },
+          transaction: t
+        }).spread(function(report, created) {
+
+          if (created) {
+            return verse.increment('reportCount', {transaction: t});
+          }
+
+          return Promise.reject(helper.makePredictableError(200, '이미 신고 했습니다'));
         }).then(function () {
           t.commit();
         }).catch(function (err) {
           t.rollback();
+          return Promise.reject(err);
         })
       });
     });
