@@ -7,6 +7,7 @@ var winston = require('./../config/env/winston.js');
 var sequelize = require('./../config/env/sequelize.js');
 var Verse = require('./../model/verse');
 var Like = require('./../model/like');
+var Report = require('./../model/report');
 var credentials = require('./../credentials.js');
 
 var router = express.Router();
@@ -101,7 +102,7 @@ router.get('/randomList', function(req, res, next) {
   winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
 
   var userId = req.query.userId;
-  var query = "SELECT v.*, l.id AS isLike FROM verses AS v LEFT OUTER JOIN likes AS l ON v.id = l.verseId AND l.userId = " + userId + " ORDER BY RAND() LIMIT 20;";
+  var query = "SELECT v.*, l.id AS isLike FROM verses AS v LEFT OUTER JOIN likes AS l ON v.id = l.verseId AND l.userId = " + userId + " WHERE v.reportCount < 2 ORDER BY RAND() LIMIT 20;";
 
   sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
     winston.debug('랜덤으로 성경 리스트 불러오기 완료');
@@ -224,6 +225,59 @@ router.post('/dislike/:likeId', function(req, res, next) {
     next(err);
   });
 });
+
+
+/**
+ * 신고하기 컨트롤러
+ */
+router.post('/report/:verseId', function(req, res, next) {
+  winston.debug('신고하기 컨트롤러 시작');
+
+  var userId = req.body.userId;
+  var verseId = req.params.verseId;
+  var reportReason = req.body.reason;
+
+  winston.debug('유효성 검사 시작');
+  validation.reportValidation(userId, verseId, reportReason).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('verseId를 이용하여 verse 조회 시작');
+
+    return sequelize.transaction().then(function (t) {
+      return Verse.findById(verseId, {transaction: t}).then(function (verse) {
+        if (verse === null) {
+          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+        }
+
+        winston.debug('verseId를 이용하여 verse 조회 완료');
+        winston.debug('신고하기 디비에 추가');
+
+        return Report.create({
+          reason: reportReason,
+          verseId: verseId,
+          userId: userId
+        }, {transaction: t}).then(function(report) {
+          return verse.increment('reportCount', {transaction: t});
+        }).then(function () {
+          t.commit();
+        }).catch(function (err) {
+          t.rollback();
+        })
+      });
+    });
+  }).then(function() {
+    winston.debug('신고 완료');
+
+    res.json({
+      success: 1,
+      result: '신고 완료 됬습니다.'
+    })
+  }).catch(function(err) {
+    winston.debug('신고 실패');
+
+    next(err);
+  });
+});
+
 
 /**
  * 내 성경 구절 리스트 가져오기 컨트롤러
