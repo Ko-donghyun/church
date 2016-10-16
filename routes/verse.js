@@ -121,7 +121,9 @@ router.get('/randomList', function(req, res, next) {
   });
 });
 
-
+/**
+ * 종아요 컨트롤러
+ */
 router.post('/like/:verseId', function(req, res, next) {
   winston.debug('좋아요 컨트롤러 시작');
 
