@@ -105,7 +105,7 @@ router.get('/randomList', function(req, res, next) {
 
   sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
     winston.debug('랜덤으로 성경 리스트 불러오기 완료');
-    
+
     res.json({
       success: 1,
       result: result
@@ -129,12 +129,43 @@ router.post('/like/:verseId', function(req, res, next) {
   winston.debug('유효성 검사 시작');
   validation.likeValidation(userId, verseId).then(function() {
     winston.debug('유효성 검사 완료');
-    winston.debug('versId를 이용하여 verse 조회 시작');
+    winston.debug('verseId를 이용하여 verse 조회 시작');
 
-    return Verse.findById(verseId);
-  }).then(function(verse) {
-    if (verse === null) {
-      return Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+    return sequelize.transaction().then(function (t) {
+      return Verse.findById(verseId, {transaction: t}).then(function (verse) {
+        if (verse === null) {
+          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+        }
+
+        winston.debug('verseId를 이용하여 verse 조회 완료');
+        winston.debug('좋아요 디비에 추가');
+        winston.debug(verse.id);
+
+        return Like.create({
+          userId: userId,
+          verseId: verseId
+        }, {transaction: t}).then(function (like) {
+          return verse.increment('likeCount', {transaction: t});
+        }).then(function (verse) {
+          t.commit();
+        }).catch(function (err) {
+          t.rollback();
+        })
+      });
+    });
+  }).then(function() {
+    winston.debug('좋아요 완료');
+
+    res.json({
+      success: 1,
+      message: '좋아요 처리 완료.'
+    })
+  }).catch(function(err) {
+    winston.debug('좋아요 실패');
+
+    next(err);
+  });
+});
     }
 
     winston.debug('versId를 이용하여 verse 조회 완료');
