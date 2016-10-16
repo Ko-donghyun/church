@@ -134,3 +134,21 @@ exports.dislikeValidation = function(userId, likeId) {
 };
 
 
+/**
+ * 신고하기 유효성 체크 메서드
+ *
+ * @param userId
+ * @param verseId
+ * @param reportReason
+ */
+exports.reportValidation = function(userId, verseId, reportReason) {
+  return new Promise(function(resolve, reject) {
+    if (userId === undefined || verseId === undefined || reportReason === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+
+
