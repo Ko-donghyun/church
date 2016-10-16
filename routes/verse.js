@@ -102,7 +102,16 @@ router.get('/randomList', function(req, res, next) {
   winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
 
   var userId = req.query.userId;
-  var query = "SELECT v.*, l.id AS isLike FROM verses AS v LEFT OUTER JOIN likes AS l ON v.id = l.verseId AND l.userId = " + userId + " WHERE v.reportCount < 2 ORDER BY RAND() LIMIT 20;";
+  var query =
+    "SELECT v.*, l.id AS isLike " +
+    "FROM verses AS v " +
+    "LEFT OUTER JOIN likes AS l " +
+    "ON v.id = l.verseId " +
+    "AND l.userId = " + userId + " " +
+    "WHERE v.reportCount < 2 " +
+    "AND v.deletedAt IS NULL " +
+    "ORDER BY RAND() " +
+    "LIMIT 20;";
 
   sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
     winston.debug('랜덤으로 성경 리스트 불러오기 완료');
