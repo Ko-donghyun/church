@@ -12,9 +12,7 @@ var verse = require('./routes/verse');
 var winston = require('./config/env/winston.js');
 var helper = require('./routes/helper/helper.js');
 
-var User = require('./model/user');
-var Verse = require('./model/verse');
-var Like = require('./model/like');
+var Relation = require('./model/relation');
 
 var app = express();
 
