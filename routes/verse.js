@@ -164,7 +164,8 @@ router.post('/like/:verseId', function(req, res, next) {
           if (created) {
             return verse.increment('likeCount', {transaction: t});
           }
-          return null;
+
+          return t;
         }).then(function () {
           t.commit();
         }).catch(function (err) {
