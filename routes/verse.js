@@ -167,10 +167,10 @@ router.post('/like/:verseId', function(req, res, next) {
 
         }).then(function () {
           t.commit();
-        }).catch(function (err) {
-          t.rollback();
-          //return Promise.reject(err);
         })
+      }).catch(function (err) {
+        t.rollback();
+        //return Promise.reject(err);
       });
     });
   }).then(function() {
