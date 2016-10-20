@@ -311,6 +311,7 @@ router.get('/myList', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
+    // TODO offset 필요, 쿼리 최적화 필요
     var query =
       "SELECT v.*, l.id AS isLike " +
       "FROM verses AS v " +
@@ -332,6 +333,48 @@ router.get('/myList', function(req, res, next) {
     });
   }).catch(function(err) {
     winston.debug('내 성경 리스트 불러오기 실패');
+
+    next(err);
+  });
+});
+
+
+/**
+ * 내 성경 구절 리스트에서 하나의 아이템 가져오기 컨트롤러
+ */
+router.get('/myList/item', function(req, res, next) {
+  winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 컨트롤러 시작');
+
+  var verseId = req.query.verseId;
+  var userId = req.query.userId;
+
+  winston.debug('유효성 검사 시작');
+  validation.getMyListItemValidation(userId, verseId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('내 성경 구절 리스트 가져오기 시작');
+
+    // TODO offset 필요, 쿼리 최적화 필요
+    var query =
+      "SELECT v.*, l.id AS isLike " +
+      "FROM verses AS v " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON v.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "WHERE v.id = " + verseId + " " +
+      "AND v.userId = " + userId + " " +
+      "AND v.deletedAt IS NULL " +
+      "LIMIT 1;";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
+  }).then(function(result) {
+    winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 완료');
+
+    res.json({
+      success: 1,
+      result: result
+    });
+  }).catch(function(err) {
+    winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 실패');
 
     next(err);
   });
