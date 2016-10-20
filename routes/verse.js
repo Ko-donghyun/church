@@ -322,15 +322,10 @@ router.get('/myList', function(req, res, next) {
       "ORDER BY v.createdAt DESC " +
       "LIMIT 20;";
 
-    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
-      winston.debug('랜덤으로 성경 리스트 불러오기 완료');
-
-      res.json({
-        success: 1,
-        result: result
-      })
-    });
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
+    winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+
     res.json({
       success: 1,
       result: result
