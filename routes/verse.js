@@ -167,8 +167,8 @@ router.post('/like/:verseId', function(req, res, next) {
         }).then(function () {
           t.commit();
         }).catch(function (err) {
-
           t.rollback();
+          return Promise.reject(err);
         })
       });
     });
@@ -218,6 +218,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
           t.commit();
         }).catch(function (err) {
           t.rollback();
+          return Promise.reject(err);
         })
       });
     });
