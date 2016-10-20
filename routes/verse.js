@@ -145,7 +145,7 @@ router.post('/like/:verseId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Verse.findById(verseId, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          throw Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+          throw helper.makePredictableError(200, '유효하지 않은 verseId 입니다');
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -164,7 +164,7 @@ router.post('/like/:verseId', function(req, res, next) {
           if (created) {
             return verse.increment('likeCount', {transaction: t});
           }
-          
+
         }).then(function () {
           t.commit();
         }).catch(function (err) {
