@@ -170,7 +170,6 @@ router.post('/like/:verseId', function(req, res, next) {
         })
       }).catch(function (err) {
         t.rollback();
-        //return Promise.reject(err);
       });
     });
   }).then(function() {
@@ -217,10 +216,10 @@ router.post('/dislike/:likeId', function(req, res, next) {
           });
         }).then(function () {
           t.commit();
-        }).catch(function (err) {
-          t.rollback();
-          return Promise.reject(err);
-        })
+        });
+      }).catch(function (err) {
+        t.rollback();
+        return Promise.reject(err);
       });
     });
   }).then(function() {
@@ -278,10 +277,10 @@ router.post('/report/:verseId', function(req, res, next) {
           return Promise.reject(helper.makePredictableError(200, '이미 신고 했습니다'));
         }).then(function () {
           t.commit();
-        }).catch(function (err) {
-          t.rollback();
-          return Promise.reject(err);
         })
+      }).catch(function (err) {
+        t.rollback();
+        return Promise.reject(err);
       });
     });
   }).then(function() {
