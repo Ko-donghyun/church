@@ -100,6 +100,23 @@ exports.getMyListValidation = function(userId) {
 
 
 /**
+ * 내 성경 구절 리스트에서 하나의 아이템 가져오기 유효성 체크 메서드
+ *
+ * @param userId
+ * @param verseId
+ */
+exports.getMyListItemValidation = function(userId, verseId) {
+  return new Promise(function(resolve, reject) {
+    if (userId === undefined || verseId === undefined) {
+      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+
+
+/**
  * 내 성경 구절 지우기 유효성 체크 메서드
  *
  * @param userId
