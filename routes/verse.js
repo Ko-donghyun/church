@@ -164,11 +164,12 @@ router.post('/like/:verseId', function(req, res, next) {
           if (created) {
             return verse.increment('likeCount', {transaction: t});
           }
+          return null;
         }).then(function () {
           t.commit();
         }).catch(function (err) {
           t.rollback();
-          return Promise.reject(err);
+          //return Promise.reject(err);
         })
       });
     });
