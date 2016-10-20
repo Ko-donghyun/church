@@ -305,20 +305,27 @@ router.get('/myList', function(req, res, next) {
   winston.debug('내 성경 구절 리스트 가져오기 컨트롤러 시작');
 
   var userId = req.query.userId;
-  var limit = 20;
 
   winston.debug('유효성 검사 시작');
   validation.getMyListValidation(userId).then(function() {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
-    return Verse.findAll({
-      where: {
-        userId: userId
-      },
-      limit: limit
-    });
+    var query =
+      "SELECT v.*, l.id AS isLike " +
+      "FROM verses AS v " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON v.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "WHERE v.userId = " + userId + " " +
+      "AND v.deletedAt IS NULL " +
+      "ORDER BY v.createdAt DESC " +
+      "LIMIT 20;";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
+    winston.debug('내 성경 리스트 불러오기 완료');
+
     res.json({
       success: 1,
       result: result
