@@ -324,7 +324,7 @@ router.get('/myList', function(req, res, next) {
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
-    winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+    winston.debug('내 성경 리스트 불러오기 완료');
 
     res.json({
       success: 1,
