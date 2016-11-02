@@ -44,7 +44,11 @@ router.post('/register', function(req, res, next) {
     });
   }).catch(function(err) {
     winston.debug('유저 정보 저장 실패');
+    if (err.message === 'Validation error') {
+      return next(new helper.makePredictableError(200, 102, 'Sequelize Validation 에서 에러 체크'));
+    }
 
+    err.errorCode = 103;
     next(err);
   });
 });

@@ -14,7 +14,7 @@ var helper = require('./../helper/helper.js');
 exports.userInfoValidation = function(uuid, birthYear, gender, churchName) {
   return new Promise(function(resolve, reject) {
     if (uuid === undefined || birthYear === undefined || gender === undefined || churchName === undefined) {
-      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+      return reject(new helper.makePredictableError(200, 101, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
     resolve();
