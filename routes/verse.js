@@ -130,16 +130,23 @@ router.get('/randomList', function(req, res, next) {
     "ORDER BY RAND() " +
     "LIMIT 20;";
 
-  sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
-    winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+  winston.debug('유효성 검사 시작');
+  validation.getRandomVerseListValidation(userId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('랜덤으로 성경 리스트 불러오기 시작');
 
-    res.json({
-      success: 1,
-      result: result
-    })
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
+      winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+
+      res.json({
+        success: 1,
+        result: result
+      })
+    });
   }).catch(function(err) {
     winston.debug('랜덤으로 성경 리스트 불러오기 실패');
 
+    err.errorCode = 222;
     next(err);
   });
 });
