@@ -76,7 +76,7 @@ exports.saveVerseValidation = function(bibleName, startChapter, endChapter, star
     if (bibleName === undefined || startChapter === undefined || endChapter === undefined ||
       startVerse === undefined || endVerse === undefined || content === undefined || comment === undefined ||
       backgroundImageName === undefined || userId === undefined) {
-      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+      return reject(new helper.makePredictableError(200, 211, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
     resolve();

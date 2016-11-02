@@ -102,7 +102,11 @@ router.post('/bible', function(req, res, next) {
     })
   }).catch(function(err) {
     winston.debug('성경 구절 저장하기 실패');
+    if (err.message === 'Validation error') {
+      return next(new helper.makePredictableError(200, 212, 'Sequelize Validation 에서 에러 체크'));
+    }
 
+    err.errorCode = 213;
     next(err);
   });
 });
