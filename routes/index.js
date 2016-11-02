@@ -18,6 +18,10 @@ router.get('/application/check', function(req, res, next) {
 
   winston.debug('어플리 케이션 버전 체크 시작');
   helper.appVersionCheck(appVersion).then(function(message) {
+    if (message === '버전이 낮습니다.') {
+      winston.debug('app Version 낮음');
+      return Promise.reject(new helper.makePredictableError(200, 301, message));
+    }
     winston.debug('어플리 케이션 버전 체크 완료');
 
     res.json({
@@ -27,6 +31,7 @@ router.get('/application/check', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('어플리 케이션 버전 체크 실패');
 
+    err.errorCode = 302;
     next(err);
   });
 });

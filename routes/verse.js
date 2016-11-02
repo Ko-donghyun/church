@@ -34,7 +34,15 @@ router.get('/bible', function(req, res, next) {
       winston.debug('성경 구절 가져오기 완료');
 
       if (bibleText === '\nBible verse not found.\n') {
-        return next(helper.makePredictableError(200, '일치하는 구절이 없습니다'));
+        return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
+      }
+
+      if (bibleText === '\nBible version not found.\n') {
+        return next(helper.makePredictableError(200, 204, '일치하는 성경 버전이 없습니다'));
+      }
+
+      if (bibleText === '\nBible book not found.\n') {
+        return next(helper.makePredictableError(200, 205, '일치하는 성경 책이 없습니'));
       }
 
       res.json({
@@ -42,6 +50,11 @@ router.get('/bible', function(req, res, next) {
         result: bibleText
       })
     });
+  }).catch(function(err) {
+    winston.debug('성경 구절 가져오기 실패');
+
+    err.errorCode = 206;
+    next(err);
   });
 });
 
@@ -89,7 +102,11 @@ router.post('/bible', function(req, res, next) {
     })
   }).catch(function(err) {
     winston.debug('성경 구절 저장하기 실패');
+    if (err.message === 'Validation error') {
+      return next(new helper.makePredictableError(200, 212, 'Sequelize Validation 에서 에러 체크'));
+    }
 
+    err.errorCode = 213;
     next(err);
   });
 });
@@ -113,16 +130,23 @@ router.get('/randomList', function(req, res, next) {
     "ORDER BY RAND() " +
     "LIMIT 20;";
 
-  sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
-    winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+  winston.debug('유효성 검사 시작');
+  validation.getRandomVerseListValidation(userId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('랜덤으로 성경 리스트 불러오기 시작');
 
-    res.json({
-      success: 1,
-      result: result
-    })
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
+      winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+
+      res.json({
+        success: 1,
+        result: result
+      })
+    });
   }).catch(function(err) {
     winston.debug('랜덤으로 성경 리스트 불러오기 실패');
 
+    err.errorCode = 222;
     next(err);
   });
 });
@@ -145,7 +169,7 @@ router.post('/like/:verseId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Verse.findById(verseId, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          throw helper.makePredictableError(200, '유효하지 않은 verseId 입니다');
+          throw helper.makePredictableError(200, 242, '유효하지 않은 verseId 입니다');
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -170,6 +194,7 @@ router.post('/like/:verseId', function(req, res, next) {
         })
       }).catch(function (err) {
         t.rollback();
+        return Promise.reject(err);
       });
     });
   }).then(function() {
@@ -182,6 +207,7 @@ router.post('/like/:verseId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 실패');
 
+    err.errorCode = 243;
     next(err);
   });
 });
@@ -204,7 +230,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Like.findById(likeId, {transaction: t}).then(function (like) {
         if (like === null) {
-          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 likeId 입니다'));
+          return Promise.reject(helper.makePredictableError(200, 252, '유효하지 않은 likeId 입니다'));
         }
 
         winston.debug('likeId를 이용하여 like 조회 완료');
@@ -232,6 +258,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 삭제 실패');
 
+    err.errorCode = 253;
     next(err);
   });
 });
@@ -255,7 +282,7 @@ router.post('/report/:verseId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Verse.findById(verseId, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 verseId 입니다'));
+          return Promise.reject(helper.makePredictableError(200, 262, '유효하지 않은 verseId 입니다'));
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -293,6 +320,7 @@ router.post('/report/:verseId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('신고 실패');
 
+    err.errorCode = 263;
     next(err);
   });
 });
@@ -334,6 +362,7 @@ router.get('/myList', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 리스트 불러오기 실패');
 
+    err.errorCode = 272;
     next(err);
   });
 });
@@ -367,6 +396,9 @@ router.get('/myList/item', function(req, res, next) {
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
+    if (result === null) {
+      return Promise.reject(helper.makePredictableError(200, 282, '유효한 성경 구절이 없습니다'));
+    }
     winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 완료');
 
     res.json({
@@ -376,6 +408,7 @@ router.get('/myList/item', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 실패');
 
+    err.errorCode = 283;
     next(err);
   });
 });
@@ -403,7 +436,7 @@ router.post('/myList/delete', function(req, res, next) {
         }
       }, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          return Promise.reject(helper.makePredictableError(200, '유효한 성경 구절이 없습니다'));
+          return Promise.reject(helper.makePredictableError(200, 292, '유효한 성경 구절이 없습니다'));
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -425,6 +458,7 @@ router.post('/myList/delete', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 지우기 실패');
 
+    err.errorCode = 293;
     next(err);
   });
 });

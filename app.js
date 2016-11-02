@@ -49,7 +49,9 @@ if (app.get('env') === 'development') {
 
       return res.json({
         success: 0,
-        message: err.message
+        result: {
+          errorCode: err.errorCode
+        }
       })
     }
 
@@ -58,17 +60,21 @@ if (app.get('env') === 'development') {
 
       return res.json({
         success: 0,
-        message: err.message
+        result: {
+          errorCode: err.errorCode
+        }
       })
     }
 
     winston.error('에러 발생 : %s', err.stack);
 
     res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
+    res.json({
+      success: 0,
+      result: {
+        errorCode: err.errorCode
+      }
+    })
   });
 }
 
@@ -80,7 +86,9 @@ app.use(function(err, req, res, next) {
 
     return res.json({
       success: 0,
-      message: err.message
+      result: {
+        errorCode: err.errorCode
+      }
     })
   }
 
@@ -89,17 +97,21 @@ app.use(function(err, req, res, next) {
 
     return res.json({
       success: 0,
-      message: err.message
+      result: {
+        errorCode: err.errorCode
+      }
     })
   }
 
   winston.error('에러 발생 : %s', err.stack);
 
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+  res.json({
+    success: 0,
+    result: {
+      errorCode: err.errorCode
+    }
+  })
 });
 
 
