@@ -396,6 +396,9 @@ router.get('/myList/item', function(req, res, next) {
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
+    if (result === null) {
+      return Promise.reject(helper.makePredictableError(200, 282, '유효한 성경 구절이 없습니다'));
+    }
     winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 완료');
 
     res.json({
@@ -405,6 +408,7 @@ router.get('/myList/item', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 실패');
 
+    err.errorCode = 283;
     next(err);
   });
 });
