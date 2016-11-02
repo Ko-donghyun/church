@@ -9,13 +9,14 @@ var winston = require('./../../config/env/winston.js');
  * 예측 가능한 에러를 리턴하는 메서드
  *
  * @param statusCode
+ * @param errorCode
  * @param message
- * @returns {error.BaseError|Error}
  */
-exports.makePredictableError = function(statusCode, message) {
+exports.makePredictableError = function(statusCode, errorCode, message) {
   winston.warn(message);
   var err = new Error(message);
   err.statusCode = statusCode;
+  err.errorCode = errorCode;
   return err;
 };
 
