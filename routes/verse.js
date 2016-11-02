@@ -230,7 +230,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Like.findById(likeId, {transaction: t}).then(function (like) {
         if (like === null) {
-          return Promise.reject(helper.makePredictableError(200, '유효하지 않은 likeId 입니다'));
+          return Promise.reject(helper.makePredictableError(200, 252, '유효하지 않은 likeId 입니다'));
         }
 
         winston.debug('likeId를 이용하여 like 조회 완료');
@@ -258,6 +258,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 삭제 실패');
 
+    err.errorCode = 253;
     next(err);
   });
 });

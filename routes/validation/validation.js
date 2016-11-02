@@ -175,7 +175,7 @@ exports.likeValidation = function(userId, verseId) {
 exports.dislikeValidation = function(userId, likeId) {
   return new Promise(function(resolve, reject) {
     if (userId === undefined || likeId === undefined) {
-      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+      return reject(new helper.makePredictableError(200, 251, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
     resolve();
