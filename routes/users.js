@@ -72,7 +72,7 @@ router.post('/check', function(req, res, next) {
   helper.appVersionCheck(appVersion).then(function(message) {
     if (message === '버전이 낮습니다.') {
       winston.debug('app Version 낮음');
-      return Promise.reject(new helper.makePredictableError(200, message));
+      return Promise.reject(new helper.makePredictableError(200, 112, message));
     }
 
     winston.debug('app Version 체크 완료');
@@ -91,11 +91,11 @@ router.post('/check', function(req, res, next) {
     winston.debug('유저 확인 완료');
     winston.debug('리스폰 보내기');
     if (user === null) {
-      return Promise.reject(new helper.makePredictableError(200, '신규 유저입니다.'));
+      return Promise.reject(new helper.makePredictableError(200, 113, '신규 유저입니다.'));
     }
 
     if (user.isExpel === true) {
-      return Promise.reject(new helper.makePredictableError(200, '사용이 제한된 유저입니다.'));
+      return Promise.reject(new helper.makePredictableError(200, 114, '사용이 제한된 유저입니다.'));
     }
 
     res.json({
@@ -105,6 +105,7 @@ router.post('/check', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('유저 확인 실패');
 
+    err.errorCode = 115;
     next(err);
   });
 });

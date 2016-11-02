@@ -30,7 +30,7 @@ exports.userInfoValidation = function(uuid, birthYear, gender, churchName) {
 exports.userCheckValidation = function(uuid) {
   return new Promise(function(resolve, reject) {
     if (uuid === undefined) {
-      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+      return reject(new helper.makePredictableError(200, 111, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
     resolve();
