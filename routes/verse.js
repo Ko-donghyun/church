@@ -436,7 +436,7 @@ router.post('/myList/delete', function(req, res, next) {
         }
       }, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          return Promise.reject(helper.makePredictableError(200, '유효한 성경 구절이 없습니다'));
+          return Promise.reject(helper.makePredictableError(200, 292, '유효한 성경 구절이 없습니다'));
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -458,6 +458,7 @@ router.post('/myList/delete', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 지우기 실패');
 
+    err.errorCode = 293;
     next(err);
   });
 });
