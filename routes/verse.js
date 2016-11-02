@@ -169,7 +169,7 @@ router.post('/like/:verseId', function(req, res, next) {
     return sequelize.transaction().then(function (t) {
       return Verse.findById(verseId, {transaction: t}).then(function (verse) {
         if (verse === null) {
-          throw helper.makePredictableError(200, '유효하지 않은 verseId 입니다');
+          throw helper.makePredictableError(200, 242, '유효하지 않은 verseId 입니다');
         }
 
         winston.debug('verseId를 이용하여 verse 조회 완료');
@@ -194,6 +194,7 @@ router.post('/like/:verseId', function(req, res, next) {
         })
       }).catch(function (err) {
         t.rollback();
+        return Promise.reject(err);
       });
     });
   }).then(function() {
@@ -206,6 +207,7 @@ router.post('/like/:verseId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 실패');
 
+    err.errorCode = 243;
     next(err);
   });
 });
