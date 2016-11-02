@@ -34,7 +34,15 @@ router.get('/bible', function(req, res, next) {
       winston.debug('성경 구절 가져오기 완료');
 
       if (bibleText === '\nBible verse not found.\n') {
-        return next(helper.makePredictableError(200, '일치하는 구절이 없습니다'));
+        return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
+      }
+
+      if (bibleText === '\nBible version not found.\n') {
+        return next(helper.makePredictableError(200, 204, '일치하는 성경 버전이 없습니다'));
+      }
+
+      if (bibleText === '\nBible book not found.\n') {
+        return next(helper.makePredictableError(200, 205, '일치하는 성경 책이 없습니'));
       }
 
       res.json({
@@ -42,6 +50,11 @@ router.get('/bible', function(req, res, next) {
         result: bibleText
       })
     });
+  }).catch(function(err) {
+    winston.debug('성경 구절 가져오기 실패');
+
+    err.errorCode = 206;
+    next(err);
   });
 });
 

@@ -51,7 +51,7 @@ exports.getBibleVerseValidation = function(version, bibleName, startChapter, end
   return new Promise(function(resolve, reject) {
     if (version === undefined || bibleName === undefined || startChapter === undefined || endChapter === undefined ||
       startVerse === undefined || endVerse === undefined) {
-      return reject(new helper.makePredictableError(200, '필요한 파라미터를 다 받지 못했습니다.'));
+      return reject(new helper.makePredictableError(200, 201, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
     resolve();

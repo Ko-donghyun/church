@@ -43,6 +43,7 @@ exports.getBibleVerse = function(version, name, startChapter, endChapter, startP
         return resolve(cheerio.text($('body')));
       }
 
+      error.errorCode = 202;
       reject(error);
     })
   });
