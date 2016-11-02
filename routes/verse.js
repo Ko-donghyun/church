@@ -362,6 +362,7 @@ router.get('/myList', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 리스트 불러오기 실패');
 
+    err.errorCode = 272;
     next(err);
   });
 });
