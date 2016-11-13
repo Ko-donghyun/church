@@ -78,4 +78,22 @@ exports.appVersionCheck = function(appVersion) {
 exports.createToken = function() {
   return new Date().getTime().toString().substr(-5) + crypto.randomBytes(10).toString('hex');
 };
+
+
+/**
+ * 임시 폴더를 생성하는 메서드
+ *
+ * @param path - 생성할 폴더 경로
+ */
+exports.createFolder = function(path) {
+  return new Promise(function(resolve, reject) {
+    fs.mkdir(path, function(err) {
+      if (err) {
+        return reject(err);
+      }
+
+      resolve(path);
+    });
+  });
+};
 };
