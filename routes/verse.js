@@ -201,7 +201,9 @@ router.get('/download', function(req, res, next) {
     return helper.deleteFolder(workingFolder);
   }).catch(function(err) {
     winston.debug('랜덤으로 성경 리스트 불러오기 실패');
+    winston.debug('임시파일 삭제 시작');
 
+    helper.deleteFolder(workingFolder);
     err.errorCode = err.errorCode || 233;
     next(err);
   });

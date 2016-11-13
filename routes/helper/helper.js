@@ -191,16 +191,30 @@ exports.deleteFolder = function(path) {
     fs.readdir(path, function (err, files) {
       var removeFilePromise = [];
 
-      files.forEach(function(file) {
-        var filePath = path + '/' + file;
-        removeFilePromise.push(exports.deleteFile(filePath));
-      });
+      winston.debug(files);
+      if (files) {
+        files.forEach(function (file) {
+          var filePath = path + '/' + file;
+          removeFilePromise.push(exports.deleteFile(filePath));
+        });
 
-      winston.debug('폴더 내의 모든 파일 제거 시작');
-      Promise.all(removeFilePromise).then(function() {
-        winston.debug('폴더 내의 모든 파일 제거 완료');
-        winston.debug('폴더 제거 시작');
+        winston.debug('폴더 내의 모든 파일 제거 시작');
+        Promise.all(removeFilePromise).then(function () {
+          winston.debug('폴더 내의 모든 파일 제거 완료');
+          winston.debug('폴더 제거 시작');
 
+          fs.rmdir(path, function (err) {
+            if (err) {
+              return reject(err);
+            }
+
+            winston.debug('폴더 제거 완료');
+            return resolve();
+          });
+        }).catch(function (err) {
+          reject(err);
+        });
+      } else {
         fs.rmdir(path, function (err) {
           if (err) {
             return reject(err);
@@ -209,9 +223,7 @@ exports.deleteFolder = function(path) {
           winston.debug('폴더 제거 완료');
           return resolve();
         });
-      }).catch(function(err) {
-        reject(err);
-      });
+      }
     });
   });
 };
