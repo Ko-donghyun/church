@@ -31,7 +31,7 @@ router.get('/application/check', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('어플리 케이션 버전 체크 실패');
 
-    err.errorCode = 302;
+    err.errorCode = err.errorCode || 302;
     next(err);
   });
 });
