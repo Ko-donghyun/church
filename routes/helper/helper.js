@@ -120,7 +120,7 @@ exports.createImageFile = function(verse, workingFolderPath) {
     Promise.all([contentImagePromise, contentInfoImagePromise, commentImagePromise]).then(function(result) {
       imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
         '-page', '+0+0', result[0], '-page', '+0+850', result[1], '-page', '+0+960', result[2],
-        '-background', 'none', '-layers', 'flatten', resultFilePath], function (err) {
+        '-layers', 'flatten', resultFilePath], function (err) {
         if (err) {
           return reject(err);
         }
