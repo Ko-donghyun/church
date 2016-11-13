@@ -70,6 +70,7 @@ exports.appVersionCheck = function(appVersion) {
 
     resolve('최신 버전 입니다');
   });
+};
 
 
 /**
@@ -96,6 +97,65 @@ exports.createFolder = function(path) {
     });
   });
 };
+
+/**
+ * 이미지 파일 생성
+ *
+ * @param verse - verse 정보
+ * @param workingFolderPath - 작업 폴더 경로
+ */
+exports.createImageFile = function(verse, workingFolderPath) {
+  return new Promise(function(resolve, reject) {
+    var imageFolderPath = './public/images';
+    var fontFilePath = './public/fonts/tvN_light.otf';
+    var resultFilePath = workingFolderPath + '/' + exports.createToken() + '.jpg';
+
+    var contentImagePromise = makeTextImageFileCommand(fontFilePath, '80', 'center', '1080x850',
+      verse.content, workingFolderPath + '/content.png');
+    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '60', 'east', '1080x110',
+      '- ' + verse.bibleKoreanName + ' ' + verse.startChapter + '장  ', workingFolderPath + '/contentInfo.png');
+    var commentImagePromise = makeTextImageFileCommand(fontFilePath, '80', 'center', '1080x960',
+      verse.comment, workingFolderPath + '/comment.png');
+
+    Promise.all([contentImagePromise, contentInfoImagePromise, commentImagePromise]).then(function(result) {
+      imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
+        '-page', '+0+0', result[0], '-page', '+0+850', result[1], '-page', '+0+960', result[2],
+        '-background', 'none', '-layers', 'flatten', resultFilePath], function (err) {
+        if (err) {
+          return reject(err);
+        }
+
+        resolve(resultFilePath);
+      });
+    });
+  });
+};
+
+
+/**
+ * 텍스트 이미지 파일 생성 메서드
+ *
+ * @param fontFilePath - 폰트 파일 경로
+ * @param pointSize - 글자 크기
+ * @param gravity - 글자 위치
+ * @param size - 전체 파일 사이즈
+ * @param captionContent - 내용
+ * @param imageFilePath - 생성될 이미지 파일 경로
+ */
+function makeTextImageFileCommand(fontFilePath, pointSize, gravity, size, captionContent, imageFilePath) {
+  return new Promise(function(resolve, reject) {
+    imageMagick.command('convert', ['-background', 'none', '-fill', 'white', '-font', fontFilePath,
+      '-pointsize', pointSize, '-gravity', gravity, '-size', size,
+      'caption:' + captionContent, imageFilePath], function (err) {
+      if (err) {
+        winston.debug(err);
+        reject(err);
+      }
+
+      resolve(imageFilePath);
+    });
+  });
+}
 
 /**
  * 하나의 파일을 삭제하는 메소드
