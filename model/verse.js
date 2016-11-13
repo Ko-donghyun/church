@@ -8,6 +8,10 @@ var Verse = sequelize.define('verse', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  bibleKoreanName: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
   startChapter: {
     type: Sequelize.INTEGER,
     allowNull: false
