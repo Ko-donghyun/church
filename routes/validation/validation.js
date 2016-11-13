@@ -201,3 +201,18 @@ exports.reportValidation = function(userId, verseId, reportReason) {
 };
 
 
+/**
+ * 다운로드 유효성 체크 메서드
+ *
+ * @param verseId
+ */
+exports.downloadValidation = function(verseId) {
+  return new Promise(function(resolve, reject) {
+    if (verseId === undefined) {
+      return reject(new helper.makePredictableError(200, 231, '필요한 파라미터를 다 받지 못했습니다.'));
+    }
+
+    resolve();
+  });
+};
+
