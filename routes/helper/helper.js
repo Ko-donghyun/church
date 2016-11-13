@@ -119,4 +119,39 @@ exports.deleteFile = function(path) {
     });
   });
 };
+
+
+/**
+ * 폴더 전체를 삭제하는 메소드
+ *
+ * @param path - 삭제할 폴더 경로
+ */
+exports.deleteFolder = function(path) {
+  return new Promise(function(resolve, reject) {
+    fs.readdir(path, function (err, files) {
+      var removeFilePromise = [];
+
+      files.forEach(function(file) {
+        var filePath = path + '/' + file;
+        removeFilePromise.push(exports.deleteFile(filePath));
+      });
+
+      winston.debug('폴더 내의 모든 파일 제거 시작');
+      Promise.all(removeFilePromise).then(function() {
+        winston.debug('폴더 내의 모든 파일 제거 완료');
+        winston.debug('폴더 제거 시작');
+
+        fs.rmdir(path, function (err) {
+          if (err) {
+            return reject(err);
+          }
+
+          winston.debug('폴더 제거 완료');
+          return resolve();
+        });
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  });
 };
