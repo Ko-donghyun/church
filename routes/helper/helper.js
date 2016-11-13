@@ -1,9 +1,14 @@
 
+var fs = require('fs');
+var crypto = require('crypto');
+var path = require('path');
+
 var request = require('request');
 var cheerio = require('cheerio');
 
 var global = require('./../../config/env/global.js');
 var winston = require('./../../config/env/winston.js');
+var imageMagick = require('./../../config/lib/imageMagick.js');
 
 /**
  * 예측 가능한 에러를 리턴하는 메서드
@@ -65,4 +70,12 @@ exports.appVersionCheck = function(appVersion) {
 
     resolve('최신 버전 입니다');
   });
+
+
+/**
+ * 임시 값 만들기 (타임스탬프 + 랜덤)
+ */
+exports.createToken = function() {
+  return new Date().getTime().toString().substr(-5) + crypto.randomBytes(10).toString('hex');
+};
 };
