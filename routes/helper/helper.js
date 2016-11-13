@@ -96,4 +96,27 @@ exports.createFolder = function(path) {
     });
   });
 };
+
+/**
+ * 하나의 파일을 삭제하는 메소드
+ *
+ * @param path - 삭제할 파일 경로
+ */
+exports.deleteFile = function(path) {
+  return new Promise(function(resolve, reject) {
+    fs.access(path, fs.F_OK, function(err) {
+      if (err) {
+        return reject(err);
+      }
+
+      fs.unlink(path, function(err) {
+        if (err) {
+          return reject(err);
+        } else {
+          return resolve();
+        }
+      });
+    });
+  });
+};
 };
