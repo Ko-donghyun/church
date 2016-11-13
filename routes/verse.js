@@ -173,7 +173,7 @@ router.get('/download', function(req, res, next) {
     return Verse.findById(verseId);
   }).then(function(verse) {
     if (!verse) {
-      return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'))
+      return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
     }
     winston.debug('이미지화에 필요한 내용 가져오기 완료');
     winston.debug('임시 폴더 만들기 시작');
