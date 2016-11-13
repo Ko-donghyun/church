@@ -48,7 +48,7 @@ router.post('/register', function(req, res, next) {
       return next(new helper.makePredictableError(200, 102, 'Sequelize Validation 에서 에러 체크'));
     }
 
-    err.errorCode = 103;
+    err.errorCode = err.errorCode || 103;
     next(err);
   });
 });
@@ -105,7 +105,7 @@ router.post('/check', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('유저 확인 실패');
 
-    err.errorCode = 115;
+    err.errorCode = err.errorCode || 115;
     next(err);
   });
 });

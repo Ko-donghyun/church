@@ -56,7 +56,7 @@ router.get('/bible', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('성경 구절 가져오기 실패');
 
-    err.errorCode = 206;
+    err.errorCode = err.errorCode || 206;
     next(err);
   });
 });
@@ -109,7 +109,7 @@ router.post('/bible', function(req, res, next) {
       return next(new helper.makePredictableError(200, 212, 'Sequelize Validation 에서 에러 체크'));
     }
 
-    err.errorCode = 213;
+    err.errorCode = err.errorCode || 213;
     next(err);
   });
 });
@@ -149,7 +149,7 @@ router.get('/randomList', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('랜덤으로 성경 리스트 불러오기 실패');
 
-    err.errorCode = 222;
+    err.errorCode = err.errorCode || 222;
     next(err);
   });
 });
@@ -208,7 +208,7 @@ router.get('/download', function(req, res, next) {
 });
 
 /**
- * 종아요 컨트롤러
+ * 좋아요 컨트롤러
  */
 router.post('/like/:verseId', function(req, res, next) {
   winston.debug('좋아요 컨트롤러 시작');
@@ -263,7 +263,7 @@ router.post('/like/:verseId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 실패');
 
-    err.errorCode = 243;
+    err.errorCode = err.errorCode || 243;
     next(err);
   });
 });
@@ -314,7 +314,7 @@ router.post('/dislike/:likeId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('좋아요 삭제 실패');
 
-    err.errorCode = 253;
+    err.errorCode = err.errorCode || 253;
     next(err);
   });
 });
@@ -376,7 +376,7 @@ router.post('/report/:verseId', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('신고 실패');
 
-    err.errorCode = 263;
+    err.errorCode = err.errorCode || 263;
     next(err);
   });
 });
@@ -418,7 +418,7 @@ router.get('/myList', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 리스트 불러오기 실패');
 
-    err.errorCode = 272;
+    err.errorCode = err.errorCode || 272;
     next(err);
   });
 });
@@ -464,7 +464,7 @@ router.get('/myList/item', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 리스트에서 하나의 아이템 가져오기 실패');
 
-    err.errorCode = 283;
+    err.errorCode = err.errorCode || 283;
     next(err);
   });
 });
@@ -514,7 +514,7 @@ router.post('/myList/delete', function(req, res, next) {
   }).catch(function(err) {
     winston.debug('내 성경 구절 지우기 실패');
 
-    err.errorCode = 293;
+    err.errorCode = err.errorCode || 293;
     next(err);
   });
 });
