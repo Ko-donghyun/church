@@ -156,6 +156,50 @@ router.get('/randomList', function(req, res, next) {
 
 
 /**
+ * 태그 기반 성경 리스트 불러오기 컨트롤러
+ */
+router.get('/tagList', function(req, res, next) {
+  winston.debug('태그 기반 성경 리스트 불러오기 컨트롤러 시작');
+
+  var userId = req.query.userId;
+  var tag = req.query.tag;
+  var page = req.query.page || 0;
+
+  var query =
+    "SELECT v.*, l.id AS isLike " +
+    "FROM verses AS v " +
+    "LEFT OUTER JOIN likes AS l " +
+    "ON v.id = l.verseId " +
+    "AND l.userId = " + userId + " " +
+    "WHERE v.reportCount < 2 " +
+    "AND ( v.tag1 = '" + tag + "' OR v.tag2 = '" + tag + "') " +
+    "AND v.deletedAt IS NULL " +
+    "ORDER BY v.createdAt DESC " +
+    "LIMIT " + page + ", 20;";
+
+  winston.debug('유효성 검사 시작');
+  validation.getTagVerseListValidation(userId, tag).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('랜덤으로 성경 리스트 불러오기 시작');
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT}).then(function(result) {
+      winston.debug('랜덤으로 성경 리스트 불러오기 완료');
+
+      res.json({
+        success: 1,
+        result: result
+      })
+    });
+  }).catch(function(err) {
+    winston.debug('랜덤으로 성경 리스트 불러오기 실패');
+
+    err.errorCode = err.errorCode || 222;
+    next(err);
+  });
+});
+
+
+/**
  * 성경 구절 이미지화 다운로드
  */
 router.get('/download', function(req, res, next) {
