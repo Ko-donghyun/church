@@ -86,7 +86,7 @@ exports.createToken = function() {
  * 임시 정수값 만들기 (랜덤)
  */
 exports.createRandomNumber = function() {
-  return biguint(crypto.randomBytes(5), 'dec');
+  return biguint(crypto.randomBytes(2), 'dec');
 };
 
 

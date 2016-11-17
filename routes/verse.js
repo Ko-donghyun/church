@@ -130,16 +130,28 @@ router.post('/bible', function(req, res, next) {
 router.get('/randomList', function(req, res, next) {
   winston.debug('랜덤으로 성경 리스트 불러오기 컨트롤러 시작');
 
+  var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
   var query =
     "SELECT v.*, l.id AS isLike " +
-    "FROM verses AS v " +
+    "FROM (" +
+      "(SELECT * " +
+      "FROM verses " +
+      "WHERE randomNumber >= " + randomNumber + " " +
+      "ORDER BY randomNumber ASC " +
+      "LIMIT 20) " +
+    "UNION ALL " +
+      "(SELECT * " +
+      "FROM verses " +
+      "WHERE randomNumber < " + randomNumber + " " +
+      "ORDER BY randomNumber DESC " +
+      "LIMIT 20)) AS v " +
     "LEFT OUTER JOIN likes AS l " +
     "ON v.id = l.verseId " +
     "AND l.userId = " + userId + " " +
     "WHERE v.reportCount < 2 " +
     "AND v.deletedAt IS NULL " +
-    "ORDER BY v.randomNumber DESC " +
+    "ORDER BY RAND() " +
     "LIMIT 20;";
 
   winston.debug('유효성 검사 시작');
