@@ -45,6 +45,10 @@ var Verse = sequelize.define('verse', {
   tag2: {
     type: Sequelize.STRING
   },
+  randomNumber: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+  },
   likeCount: {
     type: Sequelize.INTEGER,
     defaultValue: 0

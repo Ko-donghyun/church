@@ -83,6 +83,8 @@ router.post('/bible', function(req, res, next) {
   var tag2 = req.body.tag2;
   var userId = req.body.userId;
 
+  var randomNumber = helper.createRandomNumber();
+
   winston.debug('유효성 검사 시작');
   validation.saveVerseValidation(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, tag1, tag2, userId).then(function() {
     winston.debug('유효성 검사 완료');
@@ -100,6 +102,7 @@ router.post('/bible', function(req, res, next) {
       backgroundImageName: backgroundImageName,
       tag1: tag1,
       tag2: tag2,
+      randomNumber: randomNumber,
       userId: userId
     });
   }).then(function(verse) {
@@ -136,7 +139,7 @@ router.get('/randomList', function(req, res, next) {
     "AND l.userId = " + userId + " " +
     "WHERE v.reportCount < 2 " +
     "AND v.deletedAt IS NULL " +
-    "ORDER BY RAND() " +
+    "ORDER BY v.randomNumber DESC " +
     "LIMIT 20;";
 
   winston.debug('유효성 검사 시작');
