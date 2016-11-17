@@ -71,6 +71,7 @@ router.post('/bible', function(req, res, next) {
   var imageUrl = credentials.s3EndPoint;
 
   var bibleName = req.body.bibleName;
+  var bibleKoreanName = req.body.bibleKoreanName;
   var startChapter = req.body.startChapter;
   var endChapter = req.body.endChapter;
   var startVerse = req.body.startVerse;
@@ -78,15 +79,18 @@ router.post('/bible', function(req, res, next) {
   var content = req.body.content;
   var comment = req.body.comment;
   var backgroundImageName = req.body.backgroundImageName;
+  var tag1 = req.body.tag1;
+  var tag2 = req.body.tag2;
   var userId = req.body.userId;
 
   winston.debug('유효성 검사 시작');
-  validation.saveVerseValidation(bibleName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, userId).then(function() {
+  validation.saveVerseValidation(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, tag1, tag2, userId).then(function() {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 저장하기 시작');
 
     return Verse.create({
       bibleName: bibleName,
+      bibleKoreanName: bibleKoreanName,
       startChapter: startChapter,
       endChapter: endChapter,
       startVerse: startVerse,
@@ -94,6 +98,8 @@ router.post('/bible', function(req, res, next) {
       content: content,
       comment: comment,
       backgroundImageName: backgroundImageName,
+      tag1: tag1,
+      tag2: tag2,
       userId: userId
     });
   }).then(function(verse) {

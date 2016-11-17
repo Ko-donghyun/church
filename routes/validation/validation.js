@@ -62,6 +62,7 @@ exports.getBibleVerseValidation = function(version, bibleName, startChapter, end
  * 성경 구절 저장하기 유효성 체크 메서드
  *
  * @param bibleName
+ * @param bibleKoreanName
  * @param startChapter
  * @param endChapter
  * @param startVerse
@@ -69,13 +70,16 @@ exports.getBibleVerseValidation = function(version, bibleName, startChapter, end
  * @param content
  * @param comment
  * @param backgroundImageName
+ * @param tag1
+ * @param tag2
  * @param userId
  */
-exports.saveVerseValidation = function(bibleName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, userId) {
+exports.saveVerseValidation = function(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse,
+                                       content, comment, backgroundImageName, tag1, tag2, userId) {
   return new Promise(function(resolve, reject) {
-    if (bibleName === undefined || startChapter === undefined || endChapter === undefined ||
+    if (bibleName === undefined || bibleKoreanName === undefined || startChapter === undefined || endChapter === undefined ||
       startVerse === undefined || endVerse === undefined || content === undefined || comment === undefined ||
-      backgroundImageName === undefined || userId === undefined) {
+      backgroundImageName === undefined || tag1 === undefined || tag2 === undefined || userId === undefined) {
       return reject(new helper.makePredictableError(200, 211, '필요한 파라미터를 다 받지 못했습니다.'));
     }
 
