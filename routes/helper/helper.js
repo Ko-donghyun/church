@@ -5,6 +5,7 @@ var path = require('path');
 
 var request = require('request');
 var cheerio = require('cheerio');
+var biguint = require('biguint-format');
 
 var global = require('./../../config/env/global.js');
 var winston = require('./../../config/env/winston.js');
@@ -78,6 +79,14 @@ exports.appVersionCheck = function(appVersion) {
  */
 exports.createToken = function() {
   return new Date().getTime().toString().substr(-5) + crypto.randomBytes(10).toString('hex');
+};
+
+
+/**
+ * 임시 정수값 만들기 (랜덤)
+ */
+exports.createRandomNumber = function() {
+  return biguint(crypto.randomBytes(5), 'dec');
 };
 
 
