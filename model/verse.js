@@ -39,6 +39,12 @@ var Verse = sequelize.define('verse', {
   backgroundImageName: {
     type: Sequelize.STRING
   },
+  tag1: {
+    type: Sequelize.STRING
+  },
+  tag2: {
+    type: Sequelize.STRING
+  },
   likeCount: {
     type: Sequelize.INTEGER,
     defaultValue: 0
