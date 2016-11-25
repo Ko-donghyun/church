@@ -132,7 +132,8 @@ router.get('/randomList', function(req, res, next) {
 
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
-  var requestCount = req.query.count || 1;
+  var requestCount = req.query.count || 0;
+  requestCount += 1;
   var query;
 
   if (requestCount > 2) {
@@ -210,6 +211,7 @@ router.get('/tagList', function(req, res, next) {
   var userId = req.query.userId;
   var tag = req.query.tag;
   var page = req.query.page || 0;
+  page = page * 20;
 
   var query =
     "SELECT v.*, l.id AS isLike " +
@@ -482,6 +484,7 @@ router.get('/myList', function(req, res, next) {
 
   var userId = req.query.userId;
   var page = req.query.page || 0;
+  page = page * 20;
 
   winston.debug('유효성 검사 시작');
   validation.getMyListValidation(userId).then(function() {
