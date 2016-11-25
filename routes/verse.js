@@ -132,27 +132,52 @@ router.get('/randomList', function(req, res, next) {
 
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
-  var query =
-    "SELECT v.*, l.id AS isLike " +
-    "FROM (" +
-      "(SELECT * " +
-      "FROM verses " +
-      "WHERE randomNumber >= " + randomNumber + " " +
-      "ORDER BY randomNumber ASC " +
-      "LIMIT 20) " +
-    "UNION ALL " +
-      "(SELECT * " +
-      "FROM verses " +
-      "WHERE randomNumber < " + randomNumber + " " +
-      "ORDER BY randomNumber DESC " +
-      "LIMIT 20)) AS v " +
-    "LEFT OUTER JOIN likes AS l " +
-    "ON v.id = l.verseId " +
-    "AND l.userId = " + userId + " " +
-    "WHERE v.reportCount < 2 " +
-    "AND v.deletedAt IS NULL " +
-    "ORDER BY RAND() " +
-    "LIMIT 20;";
+  var requestCount = req.query.count || 1;
+  var query;
+
+  if (requestCount > 2) {
+    query =
+      "SELECT v.*, l.id AS isLike " +
+      "FROM (" +
+        "(SELECT * " +
+        "FROM verses " +
+        "WHERE randomNumber >= " + randomNumber + " " +
+        "AND deletedAt IS NULL " +
+        "AND reportCount < 2 " +
+        "ORDER BY randomNumber ASC " +
+        "LIMIT 20) " +
+      "UNION ALL " +
+        "(SELECT * " +
+        "FROM verses " +
+        "WHERE randomNumber < " + randomNumber + " " +
+        "AND deletedAt IS NULL " +
+        "AND reportCount < 2 " +
+        "ORDER BY randomNumber DESC " +
+        "LIMIT 20)) AS v " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON v.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "WHERE v.reportCount < 2 " +
+      "AND v.deletedAt IS NULL " +
+      "ORDER BY RAND() " +
+      "LIMIT 20;";
+  } else {
+    query =
+      "SELECT v.*, l.id AS isLike " +
+      "FROM (" +
+        "(SELECT * " +
+        "FROM verses " +
+        "WHERE deletedAt IS NULL " +
+        "AND reportCount < 2 " +
+        "ORDER BY createdAt DESC " +
+        "LIMIT " + 50 * requestCount + ") " +
+      ") AS v " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON v.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "ORDER BY RAND() " +
+      "LIMIT 20;";
+  }
 
   winston.debug('유효성 검사 시작');
   validation.getRandomVerseListValidation(userId).then(function() {
@@ -456,6 +481,7 @@ router.get('/myList', function(req, res, next) {
   winston.debug('내 성경 구절 리스트 가져오기 컨트롤러 시작');
 
   var userId = req.query.userId;
+  var page = req.query.page || 0;
 
   winston.debug('유효성 검사 시작');
   validation.getMyListValidation(userId).then(function() {
@@ -472,7 +498,7 @@ router.get('/myList', function(req, res, next) {
       "WHERE v.userId = " + userId + " " +
       "AND v.deletedAt IS NULL " +
       "ORDER BY v.createdAt DESC " +
-      "LIMIT 20;";
+      "LIMIT " + page + ", 20;";
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
