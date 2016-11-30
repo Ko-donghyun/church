@@ -6,6 +6,7 @@ var path = require('path');
 var request = require('request');
 var cheerio = require('cheerio');
 var biguint = require('biguint-format');
+var im = require('imagemagick');
 
 var global = require('./../../config/env/global.js');
 var winston = require('./../../config/env/winston.js');
@@ -116,19 +117,29 @@ exports.createFolder = function(path) {
 exports.createImageFile = function(verse, workingFolderPath) {
   return new Promise(function(resolve, reject) {
     var imageFolderPath = './public/images';
-    var fontFilePath = './public/fonts/tvN_light.otf';
+    var fontFilePath = './public/fonts/KoPubBatang_Pro_Light.otf';
     var resultFilePath = workingFolderPath + '/' + exports.createToken() + '.jpg';
+    var imagesPaths;
 
-    var contentImagePromise = makeTextImageFileCommand(fontFilePath, '80', 'center', '1080x850',
+    var contentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '660x',
       verse.content, workingFolderPath + '/content.png');
-    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '60', 'east', '1080x110',
-      '- ' + verse.bibleKoreanName + ' ' + verse.startChapter + '장  ', workingFolderPath + '/contentInfo.png');
-    var commentImagePromise = makeTextImageFileCommand(fontFilePath, '80', 'center', '1080x960',
+    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'east', '660x51',
+      verse.bibleKoreanName + '   ' + verse.startChapter + '장  ', workingFolderPath + '/contentInfo.png');
+    var commentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '560x435',
       verse.comment, workingFolderPath + '/comment.png');
 
     Promise.all([contentImagePromise, contentInfoImagePromise, commentImagePromise]).then(function(result) {
+      imagesPaths = result;
+      return getImageHeight(imagesPaths[0]);
+    }).then(function(height) {
+      var verseImagePosition = 126 + ((435 - height) / 2);
+      winston.debug(height);
+      winston.debug(verseImagePosition);
       imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
-        '-page', '+0+0', result[0], '-page', '+0+850', result[1], '-page', '+0+960', result[2],
+        '-page', '+30+' + verseImagePosition , imagesPaths[0],
+        '-page', '+30+' + (verseImagePosition + height + 20), imagesPaths[1],
+        '-page', '+80+551', imagesPaths[2],
+        '-page', '+285+1100', imageFolderPath + '/temp_logo.png',
         '-layers', 'flatten', resultFilePath], function (err) {
         if (err) {
           return reject(err);
@@ -162,6 +173,25 @@ function makeTextImageFileCommand(fontFilePath, pointSize, gravity, size, captio
       }
 
       resolve(imageFilePath);
+    });
+  });
+}
+
+
+/**
+ * 이미지 파일의 높이를 가져오는 헬퍼 메서드
+ *
+ * @param imageFilePath
+ */
+function getImageHeight(imageFilePath) {
+  return new Promise(function(resolve, reject) {
+    im.identify(imageFilePath, function(err, features) {
+      if (err) {
+        return reject(err);
+      }
+
+      resolve(features.height);
+      // { format: 'JPEG', width: 3904, height: 2622, depth: 8 }
     });
   });
 }
