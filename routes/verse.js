@@ -133,13 +133,27 @@ router.get('/randomList', function(req, res, next) {
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
   var requestCount = req.query.count || 0;
+  var tag = req.query.tag || undefined;
   requestCount += 1;
   var query;
 
-  if (requestCount > 2) {
+  if (tag) {
     query =
       "SELECT v.*, l.id AS isLike " +
-      "FROM (" +
+      "FROM verses AS v " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON v.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "WHERE v.reportCount < 2 " +
+      "AND ( v.tag1 = '" + tag + "' OR v.tag2 = '" + tag + "') " +
+      "AND v.deletedAt IS NULL " +
+      "ORDER BY v.createdAt DESC " +
+      "LIMIT " + requestCount + ", 20;";
+  } else {
+    if (requestCount > 2) {
+      query =
+        "SELECT v.*, l.id AS isLike " +
+        "FROM (" +
         "(SELECT * " +
         "FROM verses " +
         "WHERE randomNumber >= " + randomNumber + " " +
@@ -147,7 +161,7 @@ router.get('/randomList', function(req, res, next) {
         "AND reportCount < 2 " +
         "ORDER BY randomNumber ASC " +
         "LIMIT 20) " +
-      "UNION ALL " +
+        "UNION ALL " +
         "(SELECT * " +
         "FROM verses " +
         "WHERE randomNumber < " + randomNumber + " " +
@@ -155,29 +169,30 @@ router.get('/randomList', function(req, res, next) {
         "AND reportCount < 2 " +
         "ORDER BY randomNumber DESC " +
         "LIMIT 20)) AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
-      "WHERE v.reportCount < 2 " +
-      "AND v.deletedAt IS NULL " +
-      "ORDER BY RAND() " +
-      "LIMIT 20;";
-  } else {
-    query =
-      "SELECT v.*, l.id AS isLike " +
-      "FROM (" +
+        "LEFT OUTER JOIN likes AS l " +
+        "ON v.id = l.verseId " +
+        "AND l.userId = " + userId + " " +
+        "WHERE v.reportCount < 2 " +
+        "AND v.deletedAt IS NULL " +
+        "ORDER BY RAND() " +
+        "LIMIT 20;";
+    } else {
+      query =
+        "SELECT v.*, l.id AS isLike " +
+        "FROM (" +
         "(SELECT * " +
         "FROM verses " +
         "WHERE deletedAt IS NULL " +
         "AND reportCount < 2 " +
         "ORDER BY createdAt DESC " +
         "LIMIT " + 50 * requestCount + ") " +
-      ") AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
-      "ORDER BY RAND() " +
-      "LIMIT 20;";
+        ") AS v " +
+        "LEFT OUTER JOIN likes AS l " +
+        "ON v.id = l.verseId " +
+        "AND l.userId = " + userId + " " +
+        "ORDER BY RAND() " +
+        "LIMIT 20;";
+    }
   }
 
   winston.debug('유효성 검사 시작');
