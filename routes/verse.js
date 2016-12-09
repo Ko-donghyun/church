@@ -133,6 +133,7 @@ router.get('/randomList', function(req, res, next) {
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
   var requestCount = req.query.count || 0;
+  var page = req.query.count || 0;
   var tag = req.query.tag || undefined;
   requestCount += 1;
   var query;
@@ -148,7 +149,7 @@ router.get('/randomList', function(req, res, next) {
       "AND ( v.tag1 = '" + tag + "' OR v.tag2 = '" + tag + "') " +
       "AND v.deletedAt IS NULL " +
       "ORDER BY v.createdAt DESC " +
-      "LIMIT " + requestCount + ", 20;";
+      "LIMIT " + page + ", 20;";
   } else {
     if (requestCount > 2) {
       query =
