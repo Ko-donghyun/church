@@ -137,9 +137,9 @@ exports.createImageFile = function(verse, workingFolderPath) {
       winston.debug(verseImagePosition);
       imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
         '-page', '+30+' + verseImagePosition , imagesPaths[0],
-        '-page', '+30+' + (verseImagePosition + height + 20), imagesPaths[1],
+        '-page', '+30+' + (verseImagePosition + height + 10), imagesPaths[1],
         '-page', '+80+551', imagesPaths[2],
-        '-page', '+285+1100', imageFolderPath + '/temp_logo.png',
+        '-page', '+310+1150', imageFolderPath + '/logo.png',
         '-layers', 'flatten', resultFilePath], function (err) {
         if (err) {
           return reject(err);
@@ -165,8 +165,8 @@ exports.createImageFile = function(verse, workingFolderPath) {
 function makeTextImageFileCommand(fontFilePath, pointSize, gravity, size, captionContent, imageFilePath) {
   return new Promise(function(resolve, reject) {
     imageMagick.command('convert', ['-background', 'none', '-fill', 'white', '-font', fontFilePath,
-      '-pointsize', pointSize, '-gravity', gravity, '-size', size,
-      'caption:' + captionContent, imageFilePath], function (err) {
+      '-pointsize', pointSize, '-gravity', gravity, '-size', size, '-interword-spacing', '7',
+      '-interline-spacing', '10', 'caption:' + captionContent, imageFilePath], function (err) {
       if (err) {
         winston.debug(err);
         reject(err);
