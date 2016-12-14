@@ -263,7 +263,62 @@ router.get('/download', function(req, res, next) {
 
     return helper.deleteFolder(workingFolder);
   }).catch(function(err) {
-    winston.debug('랜덤으로 성경 리스트 불러오기 실패');
+    winston.debug('성경 구절 이미지화 다운로드실패');
+    winston.debug('임시파일 삭제 시작');
+
+    helper.deleteFolder(workingFolder);
+    err.errorCode = err.errorCode || 233;
+    next(err);
+  });
+});
+
+
+/**
+ * 성경 구절 정사각형 이미지화 다운로드
+ */
+router.get('/download/rectangle', function(req, res, next) {
+  winston.debug('성경 구절 정사각형 이미지화 다운로드 시작');
+
+  var verseId = req.query.verseId;
+  var workingFolder = './public/working/' + helper.createToken();
+  var verseObject;
+
+  winston.debug('유효성 검사 시작');
+  validation.downloadValidation(verseId).then(function() {
+    winston.debug('유효성 검사 완료');
+    winston.debug('이미지화에 필요한 내용 가져오기 시작');
+
+    return Verse.findById(verseId);
+  }).then(function(verse) {
+    if (!verse) {
+      return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
+    }
+    winston.debug('이미지화에 필요한 내용 가져오기 완료');
+    winston.debug('임시 폴더 만들기 시작');
+
+    verseObject = verse.get({plain: true});
+    return helper.createFolder(workingFolder);
+  }).then(function() {
+    winston.debug('임시 폴더 만들기 완료');
+    winston.debug('가져온 내용을 바탕으로 이미지화 시작');
+
+    return helper.createRectangleImageFile(verseObject, workingFolder);
+  }).then(function(imageFilePath) {
+    winston.debug('가져온 내용을 바탕으로 이미지화 완료');
+    winston.debug('다운로드 리스폰 보내기');
+
+    return res.download(imageFilePath, '나눔.jpg', function (err) {
+      if (err) {
+        return Promise.reject(err);
+      }
+    });
+  }).then(function() {
+    winston.debug('리스폰 보내기 완료');
+    winston.debug('임시파일 삭제 시작');
+
+    return helper.deleteFolder(workingFolder);
+  }).catch(function(err) {
+    winston.debug('성경 구절 정사각형 이미지화 다운로드실패');
     winston.debug('임시파일 삭제 시작');
 
     helper.deleteFolder(workingFolder);
