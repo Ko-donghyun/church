@@ -123,8 +123,8 @@ exports.createImageFile = function(verse, workingFolderPath) {
 
     var contentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '660x',
       verse.content, workingFolderPath + '/content.png');
-    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'east', '660x51',
-      verse.bibleKoreanName + '   ' + verse.startChapter + '장  ', workingFolderPath + '/contentInfo.png');
+    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '24', 'east', '660x51',
+      verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse, workingFolderPath + '/contentInfo.png');
     var commentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '560x435',
       verse.comment, workingFolderPath + '/comment.png');
 
@@ -138,7 +138,7 @@ exports.createImageFile = function(verse, workingFolderPath) {
       imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
         '-page', '+30+' + verseImagePosition , imagesPaths[0],
         '-page', '+30+' + (verseImagePosition + height + 10), imagesPaths[1],
-        '-page', '+80+551', imagesPaths[2],
+        '-page', '+80+561', imagesPaths[2],
         '-page', '+310+1150', imageFolderPath + '/logo.png',
         '-layers', 'flatten', resultFilePath], function (err) {
         if (err) {
@@ -146,6 +146,57 @@ exports.createImageFile = function(verse, workingFolderPath) {
         }
 
         resolve(resultFilePath);
+      });
+    });
+  });
+};
+
+
+/**
+ * 정사각형 이미지 파일 생성
+ *
+ * @param verse - verse 정보
+ * @param workingFolderPath - 작업 폴더 경로
+ */
+exports.createRectangleImageFile = function(verse, workingFolderPath) {
+  return new Promise(function(resolve, reject) {
+    var imageFolderPath = './public/images';
+    var fontFilePath = './public/fonts/KoPubBatang_Pro_Light.otf';
+    var tempResultFilePath = workingFolderPath + '/tempResult.jpg';
+    var cropFilePath = workingFolderPath + '/' + exports.createToken() + '.jpg';
+    var imagesPaths;
+
+    var contentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '660x',
+      verse.content, workingFolderPath + '/content.png');
+    var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '24', 'east', '660x51',
+      verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse, workingFolderPath + '/contentInfo.png');
+    var commentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '560x435',
+      verse.comment, workingFolderPath + '/comment.png');
+
+    Promise.all([contentImagePromise, contentInfoImagePromise, commentImagePromise]).then(function(result) {
+      imagesPaths = result;
+      return getImageHeight(imagesPaths[0]);
+    }).then(function(height) {
+      var verseImagePosition = 126 + ((435 - height) / 2);
+      winston.debug(height);
+      winston.debug(verseImagePosition);
+      imageMagick.command('convert', ['-page', '+0+0', imageFolderPath + '/' + verse.backgroundImageName,
+        '-page', '+30+' + verseImagePosition , imagesPaths[0],
+        '-page', '+30+' + (verseImagePosition + height + 10), imagesPaths[1],
+        '-page', '+80+450', imagesPaths[2],
+        '-page', '+310+800', imageFolderPath + '/logo.png',
+        '-layers', 'flatten', tempResultFilePath], function (err) {
+        if (err) {
+          return reject(err);
+        }
+
+        imageMagick.command('convert', [tempResultFilePath, '-crop', '720x720+0+180', '+repage', cropFilePath], function (err) {
+          if (err) {
+            return reject(err);
+          }
+
+          resolve(cropFilePath);
+        });
       });
     });
   });
