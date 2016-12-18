@@ -120,11 +120,12 @@ exports.createImageFile = function(verse, workingFolderPath) {
     var fontFilePath = './public/fonts/KoPubBatang_Pro_Light.otf';
     var resultFilePath = workingFolderPath + '/' + exports.createToken() + '.jpg';
     var imagesPaths;
+    var contentInfo = (verse.startVerse !== verse.endVerse) ? verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse : verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse;
 
     var contentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '660x',
       verse.content, workingFolderPath + '/content.png');
     var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '24', 'east', '660x51',
-      verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse, workingFolderPath + '/contentInfo.png');
+      contentInfo, workingFolderPath + '/contentInfo.png');
     var commentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '560x435',
       verse.comment, workingFolderPath + '/comment.png');
 
@@ -165,11 +166,12 @@ exports.createRectangleImageFile = function(verse, workingFolderPath) {
     var tempResultFilePath = workingFolderPath + '/tempResult.jpg';
     var cropFilePath = workingFolderPath + '/' + exports.createToken() + '.jpg';
     var imagesPaths;
+    var contentInfo = (verse.startVerse !== verse.endVerse) ? verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse : verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse;
 
     var contentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '660x',
       verse.content, workingFolderPath + '/content.png');
     var contentInfoImagePromise = makeTextImageFileCommand(fontFilePath, '24', 'east', '660x51',
-      verse.bibleKoreanName + '  ' + verse.startChapter + ':' + verse.startVerse + '~' + verse.endVerse, workingFolderPath + '/contentInfo.png');
+      contentInfo, workingFolderPath + '/contentInfo.png');
     var commentImagePromise = makeTextImageFileCommand(fontFilePath, '25', 'center', '560x435',
       verse.comment, workingFolderPath + '/comment.png');
 
