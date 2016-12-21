@@ -614,17 +614,21 @@ router.get('/myList/item', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
-    // TODO offset 필요, 쿼리 최적화 필요
     var query =
-      "SELECT v.*, l.id AS isLike " +
+      "SELECT verse.*, l.id AS isLike " +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount " +
       "FROM verses AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
       "WHERE v.id = " + verseId + " " +
-      "AND v.userId = " + userId + " " +
       "AND v.deletedAt IS NULL " +
-      "LIMIT 1;";
+      "GROUP BY v.id) AS verse " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON verse.id = l.verseId " +
+      "AND l.userId = " + userId + " ";
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
