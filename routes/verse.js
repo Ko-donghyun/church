@@ -33,26 +33,32 @@ router.get('/bible', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 가져오기 시작');
 
-    helper.getBibleVerse(version, bibleName, startChapter, endChapter, startVerse, endVerse).then(function(bibleText) {
-      winston.debug('성경 구절 가져오기 완료');
+    var query =
+      "SELECT GROUP_CONCAT(sentence SEPARATOR ' ') AS bibleText " +
+      "FROM bibles " +
+      "WHERE short_label = :bibleName " +
+      "AND chapter = :chapter " +
+      "AND paragraph BETWEEN :startParagraph AND :endParagraph " +
+      "GROUP BY chapter;";
 
-      if (bibleText === '\nBible verse not found.\n') {
-        return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
-      }
-
-      if (bibleText === '\nBible version not found.\n') {
-        return next(helper.makePredictableError(200, 204, '일치하는 성경 버전이 없습니다'));
-      }
-
-      if (bibleText === '\nBible book not found.\n') {
-        return next(helper.makePredictableError(200, 205, '일치하는 성경 책이 없습니'));
-      }
-
-      res.json({
-        success: 1,
-        result: bibleText
-      })
+    return sequelize.query(query, {
+      replacements: {
+        bibleName: bibleName,
+        chapter: startChapter,
+        startParagraph: startVerse,
+        endParagraph: endVerse
+      },
+      type: sequelize.QueryTypes.SELECT
     });
+  }).then(function(result) {
+    if (!result.length) {
+      return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
+    }
+
+    res.json({
+      success: 1,
+      result: result[0].bibleText
+    })
   }).catch(function(err) {
     winston.debug('성경 구절 가져오기 실패');
 
