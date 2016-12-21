@@ -258,7 +258,20 @@ router.get('/download', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('이미지화에 필요한 내용 가져오기 시작');
 
-    return Verse.findById(verseId);
+    var query =
+      "SELECT verse.*" +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName " +
+      "FROM verses AS v " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.id = " + verseId + " " +
+      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id) AS verse ";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(verse) {
     if (!verse) {
       return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
@@ -266,7 +279,7 @@ router.get('/download', function(req, res, next) {
     winston.debug('이미지화에 필요한 내용 가져오기 완료');
     winston.debug('임시 폴더 만들기 시작');
 
-    verseObject = verse.get({plain: true});
+    verseObject = verse[0];
     return helper.createFolder(workingFolder);
   }).then(function() {
     winston.debug('임시 폴더 만들기 완료');
@@ -313,7 +326,20 @@ router.get('/download/rectangle', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('이미지화에 필요한 내용 가져오기 시작');
 
-    return Verse.findById(verseId);
+    var query =
+      "SELECT verse.*" +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName " +
+      "FROM verses AS v " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.id = " + verseId + " " +
+      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id) AS verse ";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(verse) {
     if (!verse) {
       return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
@@ -321,7 +347,7 @@ router.get('/download/rectangle', function(req, res, next) {
     winston.debug('이미지화에 필요한 내용 가져오기 완료');
     winston.debug('임시 폴더 만들기 시작');
 
-    verseObject = verse.get({plain: true});
+    verseObject = verse[0];
     return helper.createFolder(workingFolder);
   }).then(function() {
     winston.debug('임시 폴더 만들기 완료');
