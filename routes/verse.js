@@ -33,26 +33,32 @@ router.get('/bible', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 가져오기 시작');
 
-    helper.getBibleVerse(version, bibleName, startChapter, endChapter, startVerse, endVerse).then(function(bibleText) {
-      winston.debug('성경 구절 가져오기 완료');
+    var query =
+      "SELECT GROUP_CONCAT(sentence SEPARATOR ' ') AS bibleText " +
+      "FROM bibles " +
+      "WHERE short_label = :bibleName " +
+      "AND chapter = :chapter " +
+      "AND paragraph BETWEEN :startParagraph AND :endParagraph " +
+      "GROUP BY chapter;";
 
-      if (bibleText === '\nBible verse not found.\n') {
-        return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
-      }
-
-      if (bibleText === '\nBible version not found.\n') {
-        return next(helper.makePredictableError(200, 204, '일치하는 성경 버전이 없습니다'));
-      }
-
-      if (bibleText === '\nBible book not found.\n') {
-        return next(helper.makePredictableError(200, 205, '일치하는 성경 책이 없습니'));
-      }
-
-      res.json({
-        success: 1,
-        result: bibleText
-      })
+    return sequelize.query(query, {
+      replacements: {
+        bibleName: bibleName,
+        chapter: startChapter,
+        startParagraph: startVerse,
+        endParagraph: endVerse
+      },
+      type: sequelize.QueryTypes.SELECT
     });
+  }).then(function(result) {
+    if (!result.length) {
+      return next(helper.makePredictableError(200, 203, '일치하는 구절이 없습니다'));
+    }
+
+    res.json({
+      success: 1,
+      result: result[0].bibleText
+    })
   }).catch(function(err) {
     winston.debug('성경 구절 가져오기 실패');
 
@@ -76,7 +82,6 @@ router.post('/bible', function(req, res, next) {
   var endChapter = req.body.endChapter;
   var startVerse = req.body.startVerse;
   var endVerse = req.body.endVerse;
-  var content = req.body.content;
   var comment = req.body.comment;
   var backgroundImageName = req.body.backgroundImageName;
   var tag1 = req.body.tag1;
@@ -86,7 +91,7 @@ router.post('/bible', function(req, res, next) {
   var randomNumber = helper.createRandomNumber();
 
   winston.debug('유효성 검사 시작');
-  validation.saveVerseValidation(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse, content, comment, backgroundImageName, tag1, tag2, userId).then(function() {
+  validation.saveVerseValidation(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse, comment, backgroundImageName, tag1, tag2, userId).then(function() {
     winston.debug('유효성 검사 완료');
     winston.debug('성경 구절 저장하기 시작');
 
@@ -97,7 +102,6 @@ router.post('/bible', function(req, res, next) {
       endChapter: endChapter,
       startVerse: startVerse,
       endVerse: endVerse,
-      content: content,
       comment: comment,
       backgroundImageName: backgroundImageName,
       tag1: tag1,
@@ -133,63 +137,84 @@ router.get('/randomList', function(req, res, next) {
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
   var requestCount = req.query.count || 0;
+  winston.debug(requestCount);
   var page = req.query.count || 0;
   var tag = req.query.tag || undefined;
-  requestCount += 1;
   var query;
 
   if (tag) {
     query =
-      "SELECT v.*, l.id AS isLike " +
+      "SELECT verse.*, l.id AS isLike " +
+      "FROM (" +
+      "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
       "FROM verses AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
-      "WHERE v.reportCount < 2 " +
+      "JOIN bibles AS b " +
+      "ON v.bibleKoreanName = b.long_label " +
+      "AND v.startChapter = b.chapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.deletedAt IS NULL " +
+      "AND v.reportCount < 2 " +
       "AND ( v.tag1 = '" + tag + "' OR v.tag2 = '" + tag + "') " +
-      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id " +
       "ORDER BY v.createdAt DESC " +
-      "LIMIT " + page + ", 20;";
+      "LIMIT " + page + ", 20) " +
+      ") AS verse " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON verse.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "LIMIT 20;";
   } else {
     if (requestCount > 2) {
       query =
-        "SELECT v.*, l.id AS isLike " +
+        "SELECT verse.*, l.id AS isLike " +
         "FROM (" +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE randomNumber >= " + randomNumber + " " +
-        "AND deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY randomNumber ASC " +
-        "LIMIT 20) " +
-        "UNION ALL " +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE randomNumber < " + randomNumber + " " +
-        "AND deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY randomNumber DESC " +
-        "LIMIT 20)) AS v " +
-        "LEFT OUTER JOIN likes AS l " +
-        "ON v.id = l.verseId " +
-        "AND l.userId = " + userId + " " +
-        "WHERE v.reportCount < 2 " +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.randomNumber >= " + randomNumber + " " +
         "AND v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.randomNumber ASC " +
+        "LIMIT 20) " +
+        "UNION ALL (" +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.randomNumber < " + randomNumber + " " +
+        "AND v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.randomNumber DESC))) AS verse " +
+        "LEFT OUTER JOIN likes AS l " +
+        "ON verse.id = l.verseId " +
+        "AND l.userId = " + userId + " " +
         "ORDER BY RAND() " +
         "LIMIT 20;";
     } else {
       query =
-        "SELECT v.*, l.id AS isLike " +
+        "SELECT verse.*, l.id AS isLike " +
         "FROM (" +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY createdAt DESC " +
-        "LIMIT " + 50 * requestCount + ") " +
-        ") AS v " +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.createdAt DESC " +
+        "LIMIT " + 40 * requestCount + ", 40) " +
+        ") AS verse " +
         "LEFT OUTER JOIN likes AS l " +
-        "ON v.id = l.verseId " +
+        "ON verse.id = l.verseId " +
         "AND l.userId = " + userId + " " +
         "ORDER BY RAND() " +
         "LIMIT 20;";
@@ -233,7 +258,20 @@ router.get('/download', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('이미지화에 필요한 내용 가져오기 시작');
 
-    return Verse.findById(verseId);
+    var query =
+      "SELECT verse.*" +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName " +
+      "FROM verses AS v " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.id = " + verseId + " " +
+      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id) AS verse ";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(verse) {
     if (!verse) {
       return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
@@ -241,7 +279,7 @@ router.get('/download', function(req, res, next) {
     winston.debug('이미지화에 필요한 내용 가져오기 완료');
     winston.debug('임시 폴더 만들기 시작');
 
-    verseObject = verse.get({plain: true});
+    verseObject = verse[0];
     return helper.createFolder(workingFolder);
   }).then(function() {
     winston.debug('임시 폴더 만들기 완료');
@@ -288,7 +326,20 @@ router.get('/download/rectangle', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('이미지화에 필요한 내용 가져오기 시작');
 
-    return Verse.findById(verseId);
+    var query =
+      "SELECT verse.*" +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName " +
+      "FROM verses AS v " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.id = " + verseId + " " +
+      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id) AS verse ";
+
+    return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(verse) {
     if (!verse) {
       return Promise.reject(new helper.makePredictableError(200, 232, '유효하지 않은 verseId 입니다.'));
@@ -296,7 +347,7 @@ router.get('/download/rectangle', function(req, res, next) {
     winston.debug('이미지화에 필요한 내용 가져오기 완료');
     winston.debug('임시 폴더 만들기 시작');
 
-    verseObject = verse.get({plain: true});
+    verseObject = verse[0];
     return helper.createFolder(workingFolder);
   }).then(function() {
     winston.debug('임시 폴더 만들기 완료');
@@ -517,17 +568,20 @@ router.get('/myList', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
-    // TODO offset 필요, 쿼리 최적화 필요
     var query =
-      "SELECT v.*, l.id AS isLike " +
+      "SELECT verse.* " +
+      "FROM (" +
+      "SELECT v.id, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName " +
       "FROM verses AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
       "WHERE v.userId = " + userId + " " +
       "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id " +
       "ORDER BY v.createdAt DESC " +
-      "LIMIT " + page + ", 20;";
+      "LIMIT " + page + ", 20) AS verse;";
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
@@ -560,17 +614,21 @@ router.get('/myList/item', function(req, res, next) {
     winston.debug('유효성 검사 완료');
     winston.debug('내 성경 구절 리스트 가져오기 시작');
 
-    // TODO offset 필요, 쿼리 최적화 필요
     var query =
-      "SELECT v.*, l.id AS isLike " +
+      "SELECT verse.*, l.id AS isLike " +
+      "FROM (" +
+      "SELECT v.id, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount " +
       "FROM verses AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
+      "JOIN bibles AS b " +
+      "ON b.long_label = v.bibleKoreanName " +
+      "AND b.chapter = v.startChapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
       "WHERE v.id = " + verseId + " " +
-      "AND v.userId = " + userId + " " +
       "AND v.deletedAt IS NULL " +
-      "LIMIT 1;";
+      "GROUP BY v.id) AS verse " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON verse.id = l.verseId " +
+      "AND l.userId = " + userId + " ";
 
     return sequelize.query(query, {type: sequelize.QueryTypes.SELECT});
   }).then(function(result) {
