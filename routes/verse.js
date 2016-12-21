@@ -137,63 +137,84 @@ router.get('/randomList', function(req, res, next) {
   var randomNumber = helper.createRandomNumber();
   var userId = req.query.userId;
   var requestCount = req.query.count || 0;
+  winston.debug(requestCount);
   var page = req.query.count || 0;
   var tag = req.query.tag || undefined;
-  requestCount += 1;
   var query;
 
   if (tag) {
     query =
-      "SELECT v.*, l.id AS isLike " +
+      "SELECT verse.*, l.id AS isLike " +
+      "FROM (" +
+      "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
       "FROM verses AS v " +
-      "LEFT OUTER JOIN likes AS l " +
-      "ON v.id = l.verseId " +
-      "AND l.userId = " + userId + " " +
-      "WHERE v.reportCount < 2 " +
+      "JOIN bibles AS b " +
+      "ON v.bibleKoreanName = b.long_label " +
+      "AND v.startChapter = b.chapter " +
+      "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+      "WHERE v.deletedAt IS NULL " +
+      "AND v.reportCount < 2 " +
       "AND ( v.tag1 = '" + tag + "' OR v.tag2 = '" + tag + "') " +
-      "AND v.deletedAt IS NULL " +
+      "GROUP BY v.id " +
       "ORDER BY v.createdAt DESC " +
-      "LIMIT " + page + ", 20;";
+      "LIMIT " + page + ", 20) " +
+      ") AS verse " +
+      "LEFT OUTER JOIN likes AS l " +
+      "ON verse.id = l.verseId " +
+      "AND l.userId = " + userId + " " +
+      "LIMIT 20;";
   } else {
     if (requestCount > 2) {
       query =
-        "SELECT v.*, l.id AS isLike " +
+        "SELECT verse.*, l.id AS isLike " +
         "FROM (" +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE randomNumber >= " + randomNumber + " " +
-        "AND deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY randomNumber ASC " +
-        "LIMIT 20) " +
-        "UNION ALL " +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE randomNumber < " + randomNumber + " " +
-        "AND deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY randomNumber DESC " +
-        "LIMIT 20)) AS v " +
-        "LEFT OUTER JOIN likes AS l " +
-        "ON v.id = l.verseId " +
-        "AND l.userId = " + userId + " " +
-        "WHERE v.reportCount < 2 " +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.randomNumber >= " + randomNumber + " " +
         "AND v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.randomNumber ASC " +
+        "LIMIT 20) " +
+        "UNION ALL (" +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.randomNumber < " + randomNumber + " " +
+        "AND v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.randomNumber DESC))) AS verse " +
+        "LEFT OUTER JOIN likes AS l " +
+        "ON verse.id = l.verseId " +
+        "AND l.userId = " + userId + " " +
         "ORDER BY RAND() " +
         "LIMIT 20;";
     } else {
       query =
-        "SELECT v.*, l.id AS isLike " +
+        "SELECT verse.*, l.id AS isLike " +
         "FROM (" +
-        "(SELECT * " +
-        "FROM verses " +
-        "WHERE deletedAt IS NULL " +
-        "AND reportCount < 2 " +
-        "ORDER BY createdAt DESC " +
-        "LIMIT " + 50 * requestCount + ") " +
-        ") AS v " +
+        "(SELECT v.id, v.bibleName, v.bibleKoreanName, v.startChapter, v.startVerse, v.endVerse, GROUP_CONCAT(b.sentence SEPARATOR ' ') AS content, v.comment, v.backgroundImageName, v.tag1, v.tag2, v.likeCount, v.commentCount, v.reportCount " +
+        "FROM verses AS v " +
+        "JOIN bibles AS b " +
+        "ON v.bibleKoreanName = b.long_label " +
+        "AND v.startChapter = b.chapter " +
+        "AND b.paragraph BETWEEN v.startVerse AND v.endVerse " +
+        "WHERE v.deletedAt IS NULL " +
+        "AND v.reportCount < 2 " +
+        "GROUP BY v.id " +
+        "ORDER BY v.createdAt DESC " +
+        "LIMIT " + 40 * requestCount + ", 40) " +
+        ") AS verse " +
         "LEFT OUTER JOIN likes AS l " +
-        "ON v.id = l.verseId " +
+        "ON verse.id = l.verseId " +
         "AND l.userId = " + userId + " " +
         "ORDER BY RAND() " +
         "LIMIT 20;";
