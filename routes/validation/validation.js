@@ -42,14 +42,13 @@ exports.userCheckValidation = function(uuid) {
  *
  * @param version
  * @param bibleName
- * @param startChapter
- * @param endChapter
+ * @param chapter
  * @param startVerse
  * @param endVerse
  */
-exports.getBibleVerseValidation = function(version, bibleName, startChapter, endChapter, startVerse, endVerse) {
+exports.getBibleVerseValidation = function(version, bibleName, chapter, startVerse, endVerse) {
   return new Promise(function(resolve, reject) {
-    if (version === undefined || bibleName === undefined || startChapter === undefined || endChapter === undefined ||
+    if (version === undefined || bibleName === undefined || chapter === undefined ||
       startVerse === undefined || endVerse === undefined) {
       return reject(new helper.makePredictableError(200, 201, '필요한 파라미터를 다 받지 못했습니다.'));
     }
@@ -63,22 +62,20 @@ exports.getBibleVerseValidation = function(version, bibleName, startChapter, end
  *
  * @param bibleName
  * @param bibleKoreanName
- * @param startChapter
- * @param endChapter
+ * @param chapter
  * @param startVerse
  * @param endVerse
- * @param content
  * @param comment
  * @param backgroundImageName
  * @param tag1
  * @param tag2
  * @param userId
  */
-exports.saveVerseValidation = function(bibleName, bibleKoreanName, startChapter, endChapter, startVerse, endVerse,
-                                       content, comment, backgroundImageName, tag1, tag2, userId) {
+exports.saveVerseValidation = function(bibleName, bibleKoreanName, chapter, startVerse, endVerse,
+                                       comment, backgroundImageName, tag1, tag2, userId) {
   return new Promise(function(resolve, reject) {
-    if (bibleName === undefined || bibleKoreanName === undefined || startChapter === undefined || endChapter === undefined ||
-      startVerse === undefined || endVerse === undefined || content === undefined || comment === undefined ||
+    if (bibleName === undefined || bibleKoreanName === undefined || chapter === undefined ||
+      startVerse === undefined || endVerse === undefined || comment === undefined ||
       backgroundImageName === undefined || tag1 === undefined || tag2 === undefined || userId === undefined) {
       return reject(new helper.makePredictableError(200, 211, '필요한 파라미터를 다 받지 못했습니다.'));
     }
