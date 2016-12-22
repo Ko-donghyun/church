@@ -30,7 +30,7 @@ var Verse = sequelize.define('verse', {
   },
   content: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: true
   },
   comment: {
     type: Sequelize.STRING,
