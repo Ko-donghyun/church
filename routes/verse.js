@@ -114,7 +114,8 @@ router.post('/bible', function(req, res, next) {
 
     res.json({
       success: 1,
-      result: '저장하기 완료 했습니다.'
+      result: '저장하기 완료 했습니다.',
+      verse: verse
     })
   }).catch(function(err) {
     winston.debug('성경 구절 저장하기 실패');
